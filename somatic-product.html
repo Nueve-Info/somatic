@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Somatic — The System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --black: #0a0a0a;
+      --white: #f8f6f3;
+      --cream: #f2efe9;
+      --gray: #6b6b6b;
+      --accent: #2d5a3d;
+      --accent-light: #e8f0eb;
+      --red-muted: #8b3a3a;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--white);
+      color: var(--black);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── UTILITY ─── */
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .container-wide {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .container-full {
+      max-width: 100%;
+      padding: 0;
+    }
+
+    section {
+      padding: 8rem 0;
+    }
+
+    /* ─── TYPOGRAPHY ─── */
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 7vw, 5.5rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      font-weight: 700;
+    }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4.5vw, 3.5rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      font-weight: 700;
+    }
+
+    h2.display {
+      font-size: clamp(2.5rem, 5.5vw, 4.5rem);
+      line-height: 1.08;
+    }
+
+    h3 {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gray);
+    }
+
+    p {
+      font-size: 1.15rem;
+      color: #3a3a3a;
+      line-height: 1.8;
+    }
+
+    p.large {
+      font-size: 1.35rem;
+      line-height: 1.75;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      background: transparent;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      transition: background 0.4s ease, backdrop-filter 0.4s ease;
+    }
+
+    /* Scrolled state — added by JS */
+    nav.nav-scrolled {
+      background: rgba(248, 246, 243, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    nav.nav-scrolled .logo {
+      color: var(--black);
+    }
+
+    nav.nav-scrolled .nav-link {
+      color: var(--gray);
+    }
+
+    nav.nav-scrolled .nav-link:hover,
+    nav.nav-scrolled .nav-link.active {
+      color: var(--black);
+    }
+
+    /* Top gradient so white nav text is readable over the dark hero image */
+    .hero-top-gradient {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 120px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 100%);
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .logo {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+      color: var(--white);
+      text-decoration: none;
+      transition: color 0.4s ease;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .nav-link {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      transition: color 0.4s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--white);
+    }
+
+    .nav-link.active {
+      color: var(--white);
+    }
+
+    @media (max-width: 600px) {
+      .nav-link { display: none; }
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-image {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    .hero-image .image-placeholder {
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+      border: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 4rem 2rem 5rem;
+      background: linear-gradient(to top, rgba(10,10,10,0.85) 0%, rgba(10,10,10,0.4) 60%, transparent 100%);
+      color: var(--white);
+    }
+
+    .hero-content .container-wide {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 3rem;
+    }
+
+    .hero-content h1 {
+      color: var(--white);
+      max-width: 650px;
+    }
+
+    .hero-content h1 em {
+      font-style: italic;
+      color: var(--accent-light);
+    }
+
+    .hero-right {
+      max-width: 340px;
+      flex-shrink: 0;
+    }
+
+    .hero-right p {
+      color: rgba(255,255,255,0.7);
+      font-size: 1.05rem;
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-context {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 1rem;
+    }
+
+    .hero-context a {
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+
+    @media (max-width: 768px) {
+      .hero-content .container-wide { flex-direction: column; align-items: flex-start; }
+      .hero-right { max-width: 100%; }
+    }
+
+    /* ─── CTA BUTTONS ─── */
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--white);
+      color: var(--black);
+      padding: 1.1rem 2.5rem;
+      border-radius: 100px;
+      font-size: 1rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .cta-button:hover {
+      transform: translateY(-1px);
+      opacity: 0.9;
+    }
+
+    .cta-button.dark {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .cta-button.dark:hover {
+      background: #222;
+    }
+
+    .cta-button.outline-white {
+      background: transparent;
+      color: var(--white);
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+
+    .cta-button.outline-white:hover {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.5);
+    }
+
+    .cta-button svg {
+      width: 16px;
+      height: 16px;
+      transition: transform 0.3s ease;
+    }
+
+    .cta-button:hover svg {
+      transform: translateX(3px);
+    }
+
+    /* ─── FULL-BLEED IMAGE ─── */
+    .image-placeholder {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: linear-gradient(135deg, #e8e4de 0%, #d5d0c8 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .image-placeholder .label {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gray);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .image-placeholder .desc {
+      font-size: 0.95rem;
+      color: #8a8a8a;
+      max-width: 450px;
+      text-align: center;
+      line-height: 1.5;
+      padding: 0 1rem;
+    }
+
+    .image-fullbleed {
+      border-radius: 0;
+      border: none;
+      aspect-ratio: 21/9;
+    }
+
+    .image-hero-height {
+      aspect-ratio: auto;
+      min-height: 500px;
+    }
+
+    .image-square { aspect-ratio: 1/1; }
+    .image-4-3 { aspect-ratio: 4/3; }
+    .image-3-4 { aspect-ratio: 3/4; }
+    .image-tall { aspect-ratio: 9/14; }
+    .image-cinema { aspect-ratio: 2.35/1; }
+
+    .image-block {
+      width: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .image-block.rounded {
+      border-radius: 12px;
+    }
+
+    .image-block.rounded-lg {
+      border-radius: 20px;
+    }
+
+    /* dark-context image placeholders */
+    .dark-section .image-placeholder,
+    .dark-context .image-placeholder {
+      background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+      border-color: rgba(255,255,255,0.06);
+    }
+
+    .dark-section .image-placeholder .label,
+    .dark-context .image-placeholder .label {
+      color: #555;
+    }
+
+    .dark-section .image-placeholder .desc,
+    .dark-context .image-placeholder .desc {
+      color: #444;
+    }
+
+    .accent-section .image-placeholder {
+      background: linear-gradient(135deg, #245232 0%, #1e4a2d 100%);
+      border-color: rgba(255,255,255,0.1);
+    }
+    .accent-section .image-placeholder .label { color: rgba(255,255,255,0.3); }
+    .accent-section .image-placeholder .desc { color: rgba(255,255,255,0.25); }
+
+    /* ─── DARK / CREAM / ACCENT SECTIONS ─── */
+    .dark-section {
+      background: var(--black);
+      color: var(--white);
+    }
+    .dark-section h1, .dark-section h2 { color: var(--white); }
+    .dark-section h3 { color: #666; }
+    .dark-section p { color: #aaa; }
+
+    .cream-section {
+      background: var(--cream);
+    }
+
+    .accent-section {
+      background: var(--accent);
+      color: var(--white);
+    }
+    .accent-section h2 { color: var(--white); }
+    .accent-section h3 { color: rgba(255,255,255,0.5); }
+    .accent-section p { color: rgba(255,255,255,0.8); }
+
+    /* ─── DIVIDER ─── */
+    .divider {
+      width: 60px;
+      height: 1px;
+      background: var(--black);
+      margin: 0 auto;
+      opacity: 0.2;
+    }
+    .divider-section { padding: 0; }
+
+    /* ─── THREE COLUMN VISUAL GRID ─── */
+    .visual-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin: 3rem 0;
+    }
+
+    .visual-grid-3 .grid-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .visual-grid-3 .grid-item .image-placeholder {
+      border-radius: 16px;
+      margin-bottom: 1.5rem;
+    }
+
+    .visual-grid-3 .grid-item h4 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .visual-grid-3 .grid-item p {
+      font-size: 0.95rem;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+      .visual-grid-3 { grid-template-columns: 1fr; gap: 2.5rem; }
+    }
+
+    /* ─── TWO COLUMN VISUAL ─── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .two-col.gap-sm { gap: 2rem; }
+    .two-col.gap-lg { gap: 6rem; }
+
+    @media (max-width: 768px) {
+      .two-col { grid-template-columns: 1fr; gap: 2rem; }
+    }
+
+    /* ─── LEVEL SECTIONS — STICKY VIDEO + SCROLL TEXT (APPLE-STYLE) ─── */
+    .level-scroll-container {
+      position: relative;
+    }
+
+    /* Each panel: tall enough to create scroll distance.
+       clip-path: inset(0) clips overflow WITHOUT breaking position:sticky
+       (unlike overflow:hidden which creates a new scroll context). */
+    .level-panel {
+      position: relative;
+      height: 180vh;
+      clip-path: inset(0);
+    }
+
+    /* The sticky video/image background — locks to viewport */
+    .level-video-wrap {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .level-video-wrap .image-placeholder {
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+      border: none;
+      aspect-ratio: auto;
+    }
+
+    .level-video-wrap video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Dark overlay — JS controls opacity based on scroll position */
+    .level-video-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Text layer — scrolls naturally over the sticky video.
+       NOT sticky — the user keeps full scroll control. */
+    .level-text-scroll {
+      position: relative;
+      z-index: 3;
+      margin-top: -100vh;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 25vh 0 64vh;
+    }
+
+    .level-text-inner {
+      max-width: 680px;
+      text-align: center;
+      padding: 0 2rem;
+    }
+
+    /* ── Label + heading: always visible. Description + tags: animate in. ── */
+    .level-label {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.4rem 0.9rem;
+      border-radius: 100px;
+      margin-bottom: 1.5rem;
+      width: fit-content;
+    }
+
+    .level-label.basics { background: rgba(219,234,225,0.9); color: var(--accent); }
+    .level-label.optimize { background: rgba(221,228,240,0.9); color: #2d4a7a; }
+    .level-label.experimental { background: rgba(240,224,214,0.85); color: #7a4a2d; }
+
+    .level-text-inner h2 {
+      color: var(--white);
+      margin-bottom: 0;
+      text-shadow: 0 2px 40px rgba(0,0,0,0.3);
+      margin-top: 0.5rem;
+    }
+
+    .level-text-inner .level-description {
+      margin-top: 3rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .level-text-inner .level-description p {
+      color: rgba(255,255,255,0.85);
+      font-size: 1.15rem;
+      line-height: 1.75;
+      text-shadow: 0 1px 20px rgba(0,0,0,0.3);
+    }
+
+    /* ── Staged reveal: description animates in ── */
+    .level-text-inner.show-description .level-description {
+      opacity: 1; transform: translateY(0);
+    }
+
+    /* ─── MEASUREMENTS SECTION — pinned to bottom of panel ─── */
+    .level-measurements {
+      position: relative;
+      z-index: 3;
+      padding: 0 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* Animate in separately */
+      opacity: 0;
+      transform: translateY(15px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .level-measurements.show-measurements {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .measurements-inner {
+      max-width: 480px;
+      width: 100%;
+    }
+
+    .measurements-header {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 1.25rem;
+      text-align: center;
+    }
+
+    .measurement-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .measurement-item:last-child {
+      border-bottom: none;
+    }
+
+    .measurement-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+      color: var(--white);
+      filter: grayscale(1) brightness(2);
+    }
+
+    .measurement-label {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      letter-spacing: 0.01em;
+    }
+
+    @media (max-width: 768px) {
+      .level-panel { height: 170vh; }
+      .level-text-inner { max-width: 100%; padding: 0 1.5rem; }
+    }
+
+    /* ─── STAT ROW ─── */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      margin: 3rem 0;
+      text-align: center;
+    }
+
+    .stat-item .number {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 6vw, 5rem);
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 0.75rem;
+    }
+
+    .stat-item .label {
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gray);
+      line-height: 1.5;
+    }
+
+    .dark-section .stat-item .number { color: var(--white); }
+    .dark-section .stat-item .label { color: #666; }
+    .cream-section .stat-item .number { color: var(--black); }
+
+    @media (max-width: 600px) {
+      .stat-row { grid-template-columns: 1fr; gap: 2rem; }
+    }
+
+    /* ─── PULL QUOTE ─── */
+    .pull-quote {
+      border-left: 3px solid var(--accent);
+      padding-left: 2rem;
+      margin: 3rem 0;
+    }
+
+    .pull-quote p {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      line-height: 1.5;
+      color: var(--black);
+      font-style: italic;
+    }
+
+    .dark-section .pull-quote { border-left-color: rgba(255,255,255,0.3); }
+    .dark-section .pull-quote p { color: var(--white); }
+
+    /* ─── HOW IT WORKS — VISUAL STEPS ─── */
+    .step-visual-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .step-visual-card {
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--white);
+    }
+
+    .step-visual-card .image-placeholder {
+      border-radius: 0;
+      border: none;
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+    }
+
+    .step-visual-card .step-card-body {
+      padding: 1.5rem;
+    }
+
+    .step-card-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .step-card-body h4 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .step-card-body p {
+      font-size: 0.9rem;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+      .step-visual-row { grid-template-columns: 1fr; }
+    }
+
+    /* ─── FEATURE GRID (for medical model) ─── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin: 3rem 0;
+    }
+
+    .feature-card {
+      padding: 2rem;
+      border-radius: 12px;
+    }
+
+    .cream-section .feature-card {
+      background: rgba(255,255,255,0.6);
+      border: 1px solid rgba(0,0,0,0.04);
+    }
+
+    .feature-card .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      font-size: 1.2rem;
+    }
+
+    .feature-card h4 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+
+    .feature-card p {
+      font-size: 0.95rem;
+      line-height: 1.65;
+      color: #666;
+    }
+
+    @media (max-width: 768px) {
+      .feature-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ─── CLINIC SECTION — LUXURY ─── */
+    .clinic-gallery {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+      margin: 3rem 0;
+    }
+
+    .clinic-gallery .image-placeholder {
+      border-radius: 16px;
+    }
+
+    .clinic-gallery-secondary {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .clinic-gallery-secondary .image-placeholder {
+      flex: 1;
+    }
+
+    @media (max-width: 768px) {
+      .clinic-gallery { grid-template-columns: 1fr; }
+    }
+
+    .clinic-details {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+      margin: 3rem 0;
+      padding: 3rem 0;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .clinic-detail-item h4 {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+
+    .clinic-detail-item p {
+      font-size: 1.1rem;
+      color: var(--white);
+      font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+      .clinic-details { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .clinic-details { grid-template-columns: 1fr; }
+    }
+
+    /* ─── APP MOCKUP SECTION ─── */
+    .app-showcase {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    @media (max-width: 768px) {
+      .app-showcase { grid-template-columns: 1fr; }
+    }
+
+    /* ─── PRICING ─── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin: 3rem 0;
+    }
+
+    @media (max-width: 768px) {
+      .pricing-grid { grid-template-columns: 1fr; }
+    }
+
+    .pricing-card {
+      border-radius: 20px;
+      padding: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pricing-card.basic {
+      background: var(--white);
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .pricing-card.max {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .pricing-card .tier-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .pricing-card.basic .tier-label { color: var(--accent); }
+    .pricing-card.max .tier-label { color: rgba(255,255,255,0.5); }
+
+    .pricing-card .price {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 5vw, 4rem);
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 0.35rem;
+    }
+
+    .pricing-card.max .price { color: var(--white); }
+
+    .pricing-card .price-sub {
+      font-size: 0.9rem;
+      color: var(--gray);
+      margin-bottom: 2rem;
+    }
+
+    .pricing-card.max .price-sub { color: #777; }
+
+    .pricing-card .price-divider {
+      width: 100%;
+      height: 1px;
+      margin: 1.5rem 0;
+    }
+
+    .pricing-card.basic .price-divider { background: rgba(0,0,0,0.06); }
+    .pricing-card.max .price-divider { background: rgba(255,255,255,0.1); }
+
+    .pricing-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .pricing-list li {
+      font-size: 1rem;
+      line-height: 1.7;
+      padding: 0.4rem 0;
+      padding-left: 1.5rem;
+      position: relative;
+    }
+
+    .pricing-card.basic .pricing-list li { color: #555; }
+    .pricing-card.max .pricing-list li { color: #ccc; }
+
+    .pricing-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      font-weight: 600;
+    }
+
+    .pricing-card.basic .pricing-list li::before { color: var(--accent); }
+    .pricing-card.max .pricing-list li::before { color: var(--white); }
+
+    .pricing-card .summary {
+      font-size: 0.95rem;
+      margin-top: 1rem;
+      font-style: italic;
+    }
+
+    .pricing-card.basic .summary { color: #888; }
+    .pricing-card.max .summary { color: #999; }
+
+    .pricing-cta {
+      display: block;
+      text-align: center;
+      margin-top: 2rem;
+      padding: 1rem 2rem;
+      border-radius: 100px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .pricing-card.basic .pricing-cta {
+      background: var(--black);
+      color: var(--white);
+    }
+    .pricing-card.basic .pricing-cta:hover { background: #222; }
+
+    .pricing-card.max .pricing-cta {
+      background: var(--white);
+      color: var(--black);
+    }
+    .pricing-card.max .pricing-cta:hover { background: #e8e4de; }
+
+    /* ─── VISUAL TIMELINE (annual flow) ─── */
+    .year-timeline {
+      position: relative;
+      margin: 4rem 0 2rem;
+    }
+
+    /* The connecting line */
+    .year-timeline-line {
+      position: absolute;
+      top: 140px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: rgba(255,255,255,0.15);
+      z-index: 1;
+    }
+
+    .year-timeline-line-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to right, rgba(255,255,255,0.6), rgba(255,255,255,0.15));
+    }
+
+    .year-timeline-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .year-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Image area at top */
+    .year-node-image {
+      width: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    .year-node-image .image-placeholder {
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      aspect-ratio: 4/3;
+    }
+
+    .year-node-image .image-placeholder .label {
+      color: rgba(255,255,255,0.3);
+    }
+
+    .year-node-image .image-placeholder .desc {
+      color: rgba(255,255,255,0.2);
+      font-size: 0.85rem;
+    }
+
+    /* Dot on the line */
+    .year-node-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--white);
+      border: 3px solid var(--accent);
+      margin-bottom: 1.5rem;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .year-node-dot::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+
+    /* Text below */
+    .year-node-text {
+      text-align: center;
+      padding: 0 0.5rem;
+    }
+
+    .year-node-text .year-time {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 0.5rem;
+    }
+
+    .year-node-text h4 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 0.5rem;
+    }
+
+    .year-node-text p {
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.55;
+    }
+
+    @media (max-width: 768px) {
+      .year-timeline-grid { grid-template-columns: 1fr 1fr; gap: 3rem 1.5rem; }
+      .year-timeline-line { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .year-timeline-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      padding: 3rem 0;
+      text-align: center;
+      border-top: 1px solid rgba(0,0,0,0.06);
+    }
+
+    footer p {
+      font-size: 0.85rem;
+      color: var(--gray);
+    }
+  </style>
+</head>
+<body>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- NAV                                         -->
+<!-- ════════════════════════════════════════════ -->
+<nav>
+  <a href="#" class="logo">Somatic</a>
+  <div class="nav-links">
+    <a href="somatic-manifesto.html" class="nav-link">Manifesto</a>
+    <a href="somatic-product.html" class="nav-link active">The System</a>
+  </div>
+</nav>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- HERO — FULL BLEED VISUAL                    -->
+<!-- ════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-top-gradient"></div>
+  <div class="hero-image dark-context">
+    <div class="image-placeholder image-fullbleed" style="aspect-ratio:auto; min-height:100vh;">
+      <span class="label">Hero Image</span>
+      <span class="desc">Full-bleed cinematic shot: a person walking into a bright, architecturally stunning clinical space. Floor-to-ceiling glass, warm wood paneling, soft ambient light. Shot from behind — they're stepping into something new. High-end, calm, intentional. Think Neko body scan aesthetic meets luxury hotel lobby.</span>
+    </div>
+  </div>
+  <div class="hero-content">
+    <div class="container-wide">
+      <div>
+        <span class="hero-context">You've read <a href="somatic-manifesto.html">the manifesto</a></span>
+        <h1>Live healthy<br/><em>100 years.</em></h1>
+      </div>
+      <div class="hero-right">
+        <p>A complete healthcare system — annual diagnostics, continuous monitoring, wearable trackers, and a personal physician — designed to extend both your lifespan and your healthspan through evidence-based medicine.</p>
+        <a href="#how-it-works" class="cta-button">
+          See how it works
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- STATS BAR                                   -->
+<!-- ════════════════════════════════════════════ -->
+<section class="cream-section" style="padding:5rem 0;">
+  <div class="container-wide">
+    <div class="stat-row" style="margin:0;">
+      <div class="stat-item">
+        <div class="number">4h</div>
+        <div class="label">Complete diagnostic</div>
+      </div>
+      <div class="stat-item">
+        <div class="number">365</div>
+        <div class="label">Days of continuous monitoring</div>
+      </div>
+      <div class="stat-item">
+        <div class="number">1</div>
+        <div class="label">Score to track</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- THE PREMISE — SHORT + VISUAL                -->
+<!-- ════════════════════════════════════════════ -->
+<section>
+  <div class="container" style="text-align:center; max-width:750px;">
+    <h3>The Premise</h3>
+    <h2 class="display">The right things.<br/><em style="font-style:italic; color:var(--accent);">In the right order.</em></h2>
+    <p class="large" style="margin-top:1.5rem;">Health has a sequence. Skip steps and nothing sticks. Follow the order and everything compounds. Somatic guides you through three levels — each one unlocked only when the previous is stable.</p>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- LEVELS — STICKY VIDEO + SCROLL TEXT          -->
+<!-- Apple-style: video sticks, text scrolls over -->
+<!-- ════════════════════════════════════════════ -->
+<div class="level-scroll-container">
+
+  <!-- ── LEVEL 1 — BASICS ── -->
+  <div class="level-panel" data-level="1">
+    <div class="level-video-wrap">
+      <!-- Replace with <video> when real assets are ready -->
+      <div class="image-placeholder" style="background:linear-gradient(135deg, #2a3d30 0%, #1a2820 40%, #0d1510 100%);">
+        <span class="label">Level 1 — Video / Full Bleed</span>
+        <span class="desc">Looping cinematic video: a patient during a body composition scan. Slow camera movement around the subject. Soft directional light, electrodes subtly visible. Intimate, editorial — a fashion shoot crossed with medical photography. Warm natural tones, shallow depth of field. The body as landscape.</span>
+      </div>
+      <div class="level-video-overlay"></div>
+    </div>
+    <div class="level-text-scroll">
+      <div class="level-text-inner">
+        <span class="level-label basics">Level 1 — Basics</span>
+        <h2>Fix what can kill you first.</h2>
+        <div class="level-description">
+          <p>The foundation. The metrics that predict whether you'll be alive and well in ten years — the ones that outrank every supplement stack by orders of magnitude.</p>
+        </div>
+      </div>
+    </div>
+    <div class="level-measurements">
+      <div class="measurements-inner">
+        <div class="measurements-header">Measurements</div>
+        <div class="measurement-item">
+          <div class="measurement-icon">♥</div>
+          <span class="measurement-label">Resting Heart Rate</span>
+        </div>
+        <div class="measurement-item">
+          <div class="measurement-icon">⬆</div>
+          <span class="measurement-label">VO2 Max</span>
+        </div>
+        <div class="measurement-item">
+          <div class="measurement-icon">◎</div>
+          <span class="measurement-label">Body Fat %</span>
+        </div>
+        <div class="measurement-item">
+          <div class="measurement-icon">↕</div>
+          <span class="measurement-label">Blood Pressure</span>
+        </div>
+        <div class="measurement-item">
+          <div class="measurement-icon">◇</div>
+          <span class="measurement-label">Fasting Glucose</span>
+        </div>
+        <div class="measurement-item">
+          <div class="measurement-icon">⊕</div>
+          <span class="measurement-label">Bloodwork</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LEVEL 2 — OPTIMIZATION ── -->
+  <div class="level-panel" data-level="2">
+    <div class="level-video-wrap">
+      <div class="image-placeholder" style="background:linear-gradient(135deg, #1e2d3d 0%, #162233 40%, #0a1520 100%);">
+        <span class="label">Level 2 — Video / Full Bleed</span>
+        <span class="desc">Looping cinematic video: a person mid-movement during a VO2 max test or controlled strength exercise. Close camera, confident posture, blue-shifted ambient light. Athletic but not gym-bro — medical precision meets human performance. Slow-motion details of muscle contraction, breathing rhythm.</span>
+      </div>
+      <div class="level-video-overlay"></div>
+    </div>
+    <div class="level-text-scroll">
+      <div class="level-text-inner">
+        <span class="level-label optimize">Level 2 — Optimization</span>
+        <h2>Protect what erodes quietly.</h2>
+        <div class="level-description">
+          <p>Muscle mass, hearing health, bone density — the things that don't cause emergencies but shape how you age over decades. Every fall becomes dangerous without muscle. Hearing loss links directly to dementia risk.</p>
+        </div>
+      </div>
+    </div>
+    <div class="level-measurements">
+      <div class="measurements-inner">
+        <div class="measurements-header">Measurements</div>
+        <div class="measurement-item">
+          <div class="measurement-icon">💪</div>
+          <span class="measurement-label">Muscle Mass</span>
+        </div>
+        <div class="measurement-item">
+          <div class="measurement-icon">👂</div>
+          <span class="measurement-label">Hearing Health</span>
+        </div>
+        <div class="measurement-item">
+          <div class="measurement-icon">🦴</div>
+          <span class="measurement-label">Bone Density</span>
+        </div>
+        <div class="measurement-item">
+          <div class="measurement-icon">🔬</div>
+          <span class="measurement-label">Inflammatory Markers</span>
+        </div>
+        <div class="measurement-item">
+          <div class="measurement-icon">⚡</div>
+          <span class="measurement-label">Metabolic Flexibility</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LEVEL 3 — EXPERIMENTAL ── -->
+  <div class="level-panel" data-level="3">
+    <div class="level-video-wrap">
+      <div class="image-placeholder" style="background:linear-gradient(135deg, #2a1f10 0%, #1a1208 40%, #0a0805 100%);">
+        <span class="label">Level 3 — Video / Full Bleed</span>
+        <span class="desc">Looping cinematic video: abstract molecular structures or DNA helix rotating in warm amber light against deep black. Or a cutting-edge lab — glass, steel, soft golden glow. Organic forms that feel scientific but beautiful. Dark, cinematic, premium. Macro shots of liquid in vials, peptide crystals, precision instruments. The future of medicine.</span>
+      </div>
+      <div class="level-video-overlay"></div>
+    </div>
+    <div class="level-text-scroll">
+      <div class="level-text-inner">
+        <span class="level-label experimental">Level 3 — Experimental</span>
+        <h2>The frontier — earned, not rushed.</h2>
+        <div class="level-description">
+          <p>Cutting-edge longevity protocols. Advanced interventions. The newest edge of what medicine knows. Unlocked only when your basics and optimization are stable.</p>
+        </div>
+      </div>
+    </div>
+    <div class="level-measurements">
+      <div class="measurements-inner">
+        <div class="measurements-header">Protocols</div>
+        <div class="measurement-item">
+          <div class="measurement-icon">🧬</div>
+          <span class="measurement-label">Advanced Protocols</span>
+        </div>
+        <div class="measurement-item">
+          <div class="measurement-icon">💉</div>
+          <span class="measurement-label">Peptide Therapy</span>
+        </div>
+        <div class="measurement-item">
+          <div class="measurement-icon">🔭</div>
+          <span class="measurement-label">Edge Science</span>
+        </div>
+        <div class="measurement-item">
+          <div class="measurement-icon">⚗</div>
+          <span class="measurement-label">Next-Gen Interventions</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- HOW IT WORKS — VISUAL 3-STEP (like Biograph) -->
+<!-- ════════════════════════════════════════════ -->
+<section id="how-it-works" style="padding-bottom:4rem;">
+  <div class="container-wide">
+    <div style="text-align:center; max-width:700px; margin:0 auto 3rem;">
+      <h3>How It Works</h3>
+      <h2 class="display">Four hours that change<br/>the next twelve months.</h2>
+    </div>
+
+    <div class="visual-grid-3">
+      <div class="grid-item">
+        <div class="image-placeholder image-4-3">
+          <span class="label">Step 1 Image</span>
+          <span class="desc">A patient arriving at the Somatic clinic — walking through the entrance, being greeted. Architectural interior visible. Like Biograph's "complete your health assessment" image — warm, real photography, a human moment.</span>
+        </div>
+        <div class="step-card-number">1.</div>
+        <h4>Complete your diagnostic</h4>
+        <p>A single four-hour visit. Bloodwork, body composition, cardiovascular fitness, sensory health, and dozens of biomarkers — all in one seamless session. No bouncing between specialists.</p>
+      </div>
+      <div class="grid-item">
+        <div class="image-placeholder image-4-3">
+          <span class="label">Step 2 Image</span>
+          <span class="desc">Close-up of wearable trackers being configured — an Apple Watch on a wrist, a glucose monitor being placed, a sleep tracker on a nightstand. Warm, lifestyle photography. Devices as natural extensions of daily life, not medical instruments.</span>
+        </div>
+        <div class="step-card-number">2.</div>
+        <h4>Get your trackers</h4>
+        <p>Leave with wearables configured to feed data into your Somatic profile. Familiar devices like Apple Watch alongside advanced monitors for sleep quality, glucose, and heart rate variability.</p>
+      </div>
+      <div class="grid-item">
+        <div class="image-placeholder image-4-3">
+          <span class="label">Step 3 Image</span>
+          <span class="desc">Person looking at the Somatic app on their phone — calm, in a home setting. The screen shows a clean interface with a single score and a doctor's note. Shot over-the-shoulder or from the side. Relaxed, daily-life context. Like Biograph's "review your results" shot.</span>
+        </div>
+        <div class="step-card-number">3.</div>
+        <h4>Live your life</h4>
+        <p>Your app shows one score and one direction. Your physician monitors everything year-round and reaches out when something needs attention. Your next clinic visit is in twelve months.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- FULL-BLEED APP VISUAL                       -->
+<!-- ════════════════════════════════════════════ -->
+<div class="container-full">
+  <div class="image-block">
+    <div class="image-placeholder image-cinema">
+      <span class="label">App Showcase Image</span>
+      <span class="desc">Wide, cinematic composition: the Somatic app interface floating on multiple devices — phone, tablet, desktop — against a warm gradient background. The interface shows the medical timeline, a simple progression score ("Level 1: 73%"), and a doctor's note. Lots of negative space. Product hero shot — like Function's dashboard preview. Clean, confident, calm.</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- APP — ONE SCORE                             -->
+<!-- ════════════════════════════════════════════ -->
+<section>
+  <div class="container-wide">
+    <div class="app-showcase">
+      <div>
+        <h3>The App</h3>
+        <h2>One score.<br/>Zero confusion.</h2>
+        <p class="large" style="margin-top:1.5rem;">Somatic reduces your entire health picture to a single progression score — are you moving to the next level, or aren't you?</p>
+        <p style="margin-top:1rem;">Behind that score: a complete medical timeline, your biomarker history, every intervention and its effect, your trajectory over time. Your doctor interprets it. You just follow the plan.</p>
+
+        <div class="pull-quote" style="margin-top:2.5rem;">
+          <p>Apple Health collects data.<br/>Somatic interprets it.</p>
+        </div>
+      </div>
+      <div class="image-block rounded-lg">
+        <div class="image-placeholder image-3-4">
+          <span class="label">App Mockup</span>
+          <span class="desc">Phone mockup, straight-on: the Somatic app home screen. Prominent score at top ("Level 1 — Basics: 73%"), a simplified medical timeline with trend sparklines, and a single doctor's note card at the bottom. Extreme white space. Minimal icons. The visual antithesis of a cluttered health dashboard.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- YOUR YEAR — ANNUAL FLOW                     -->
+<!-- ════════════════════════════════════════════ -->
+<section class="accent-section" style="padding-bottom:6rem;">
+  <div class="container-wide">
+    <div style="text-align:center; max-width:700px; margin:0 auto;">
+      <h3>Your Year</h3>
+      <h2>What happens between visits<br/>matters more than the visit.</h2>
+      <p style="margin-top:1rem; color:rgba(255,255,255,0.6); font-size:1.1rem;">One clinic visit starts a twelve-month cycle of continuous care. Here's how your year unfolds.</p>
+    </div>
+
+    <div class="year-timeline">
+      <div class="year-timeline-line">
+        <div class="year-timeline-line-fill"></div>
+      </div>
+
+      <div class="year-timeline-grid">
+        <!-- Node 1: Day 1 -->
+        <div class="year-node">
+          <div class="year-node-image">
+            <div class="image-placeholder" style="background:linear-gradient(135deg, #245232 0%, #1e4a2d 100%);">
+              <span class="label">Day 1 Image</span>
+              <span class="desc">Patient arriving at the Somatic clinic — walking through the glass entrance, warm interior light spilling out. A handshake or greeting moment. Premium, welcoming, the start of something.</span>
+            </div>
+          </div>
+          <div class="year-node-dot"></div>
+          <div class="year-node-text">
+            <div class="year-time">Day 1</div>
+            <h4>Full diagnostic</h4>
+            <p>Four hours of comprehensive testing. Bloodwork, body composition, cardiovascular fitness. You leave with trackers and app access.</p>
+          </div>
+        </div>
+
+        <!-- Node 2: Week 1 -->
+        <div class="year-node">
+          <div class="year-node-image">
+            <div class="image-placeholder" style="background:linear-gradient(135deg, #245232 0%, #1e4a2d 100%);">
+              <span class="label">Week 1 Image</span>
+              <span class="desc">A phone screen showing the Somatic app activating — the first score appearing, the health plan populating. Soft glow from the screen, ambient home setting. The moment the system comes to life.</span>
+            </div>
+          </div>
+          <div class="year-node-dot"></div>
+          <div class="year-node-text">
+            <div class="year-time">Week 1</div>
+            <h4>Plan goes live</h4>
+            <p>Your physician reviews all results, assigns your level, and activates your personalized health plan in the app.</p>
+          </div>
+        </div>
+
+        <!-- Node 3: Months 1–12 -->
+        <div class="year-node">
+          <div class="year-node-image">
+            <div class="image-placeholder" style="background:linear-gradient(135deg, #245232 0%, #1e4a2d 100%);">
+              <span class="label">Months 1–12 Image</span>
+              <span class="desc">Lifestyle montage feel: a person living normally — running, cooking, sleeping — with subtle wearable visible on the wrist. Data flowing quietly in the background. Daily life, monitored. Not intrusive, not medical. Just life with a safety net.</span>
+            </div>
+          </div>
+          <div class="year-node-dot"></div>
+          <div class="year-node-text">
+            <div class="year-time">Months 1–12</div>
+            <h4>Continuous care</h4>
+            <p>Wearables feed data to Somatic. Your doctor watches for signals, trends, anomalies. You see one score, one direction.</p>
+          </div>
+        </div>
+
+        <!-- Node 4: Month 12 -->
+        <div class="year-node">
+          <div class="year-node-image">
+            <div class="image-placeholder" style="background:linear-gradient(135deg, #245232 0%, #1e4a2d 100%);">
+              <span class="label">Month 12 Image</span>
+              <span class="desc">Patient returning to the clinic — same entrance as Day 1 but now the feeling is different: confident, familiar. A before/after comparison chart visible on a screen in the background. Full circle, progress made visible.</span>
+            </div>
+          </div>
+          <div class="year-node-dot"></div>
+          <div class="year-node-text">
+            <div class="year-time">Month 12</div>
+            <h4>Annual re-test</h4>
+            <p>Return to the clinic. Measure everything again. Compare against your baseline. Update your level. Set next year's course.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- THE MEDICAL MODEL                           -->
+<!-- ════════════════════════════════════════════ -->
+<section class="cream-section">
+  <div class="container-wide">
+    <div class="two-col gap-lg">
+      <div>
+        <h3>The Medical Model</h3>
+        <h2>A system you can trust — not a single doctor you hope is right.</h2>
+        <p class="large" style="margin-top:1.5rem;">Your health decisions aren't made by one physician's intuition. They're made by a protocol-driven system backed by a council of world-class specialists in cardiology, oncology, endocrinology, and longevity medicine.</p>
+        <p style="margin-top:1rem;">Your personal doctor is your point of contact. Behind them is the entire system — evidence-based, specialist-reviewed, continuously updated as the science evolves.</p>
+      </div>
+      <div class="image-block rounded-lg">
+        <div class="image-placeholder image-square">
+          <span class="label">Medical Model Image</span>
+          <span class="desc">A physician at a workstation reviewing the Somatic system — multiple patient profiles, protocol dashboards, and specialist consultation feeds visible on screens. Shot from behind/side, warm ambient lighting. Conveys depth and infrastructure — this isn't one doctor with a stethoscope, it's an entire operating system for health.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-grid" style="margin-top:4rem;">
+      <div class="feature-card">
+        <div class="feature-icon">&#x1F3AF;</div>
+        <h4>Protocol-Driven</h4>
+        <p>Every recommendation follows evidence-based protocols developed by our medical council. No guesswork. No personal bias.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#x1F9EC;</div>
+        <h4>Specialist-Backed</h4>
+        <p>World-class experts in cancer, heart health, and metabolic disease review and refine the system continuously.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#x1F504;</div>
+        <h4>Continuously Updated</h4>
+        <p>As new evidence emerges, the system evolves. Your protocols update in real-time. Never stuck on yesterday's science.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- THE CLINIC — LEGITIMIZATION LAYER           -->
+<!-- Like Apple Store: premium, trust, brand     -->
+<!-- ════════════════════════════════════════════ -->
+<section class="dark-section" id="clinic">
+  <div class="container-wide">
+    <div style="text-align:center; max-width:750px; margin:0 auto 3rem;">
+      <h3>The Clinic</h3>
+      <h2 class="display" style="color:var(--white);">A private retreat built<br/>around your health.</h2>
+      <p class="large" style="margin-top:1rem; color:#999;">You visit once a year. But the clinic is where trust is built — the physical proof that this system is real, rigorous, and world-class.</p>
+    </div>
+
+    <!-- Clinic photo gallery — like Biograph's clinic section -->
+    <div class="clinic-gallery">
+      <div class="image-block">
+        <div class="image-placeholder" style="border-radius:16px; aspect-ratio:3/2;">
+          <span class="label">Clinic Hero Image</span>
+          <span class="desc">The Somatic clinic entrance and main reception — floor-to-ceiling glass, warm wood paneling, stone flooring, a green living wall visible in the background. A staff member greeting a patient. Think Biograph's "private retreat" section — architectural, luxurious, calm. Not sterile. Not spa-like. Premium medical.</span>
+        </div>
+      </div>
+      <div class="clinic-gallery-secondary">
+        <div class="image-block">
+          <div class="image-placeholder" style="border-radius:16px;">
+            <span class="label">Clinic Detail 1</span>
+            <span class="desc">Close-up of the diagnostic suite — premium medical equipment in a beautifully designed room. Wood, glass, natural light. An examination bed that looks more like a designer lounge chair. Like Neko's clinic photography — clinical precision meets interior design.</span>
+          </div>
+        </div>
+        <div class="image-block">
+          <div class="image-placeholder" style="border-radius:16px;">
+            <span class="label">Clinic Detail 2</span>
+            <span class="desc">The physician consultation room — a patient and doctor mid-conversation across a warm wooden desk. Data visible on a large screen behind them. Intimate, unhurried, professional. The finale of the 4-hour experience.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clinic facts strip -->
+    <div class="clinic-details">
+      <div class="clinic-detail-item">
+        <h4>Location</h4>
+        <p style="color:var(--white);">Warsaw, Poland</p>
+      </div>
+      <div class="clinic-detail-item">
+        <h4>Experience</h4>
+        <p style="color:var(--white);">4 hours, seamless flow</p>
+      </div>
+      <div class="clinic-detail-item">
+        <h4>Frequency</h4>
+        <p style="color:var(--white);">Once per year</p>
+      </div>
+      <div class="clinic-detail-item">
+        <h4>International</h4>
+        <p style="color:var(--white);">Hotel + transport included</p>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top:2rem;">
+      <a href="#pricing" class="cta-button" style="background:var(--white); color:var(--black);">
+        Book a Diagnostic
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- Full-bleed Warsaw image -->
+<div class="container-full dark-context">
+  <div class="image-block">
+    <div class="image-placeholder image-cinema" style="border-radius:0; border:none;">
+      <span class="label">Warsaw Image</span>
+      <span class="desc">Cinematic aerial shot of Warsaw — the modern skyline and Vistula river at golden hour. Warm, aspirational. A city worth traveling to. Like Neko's Stockholm/London location photography — establishing shot that says "this is a destination."</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- PRICING                                     -->
+<!-- ════════════════════════════════════════════ -->
+<section id="pricing" style="padding-top:6rem;">
+  <div class="container-wide">
+    <div style="text-align:center; max-width:700px; margin:0 auto 3rem;">
+      <h3>Pricing</h3>
+      <h2 class="display">Two paths.<br/>One system.</h2>
+      <p class="large" style="margin-top:1rem;">Both plans include the full diagnostic, your personal physician, continuous monitoring, and the app. The difference is what happens after the recommendations.</p>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- Basic -->
+      <div class="pricing-card basic">
+        <div class="tier-label">Basic</div>
+        <div class="price">$3,500</div>
+        <div class="price-sub">per year</div>
+        <div class="price-divider"></div>
+        <ul class="pricing-list">
+          <li>Annual 4-hour diagnostic at our clinic</li>
+          <li>Full biomarker panel + body composition</li>
+          <li>Personal physician assigned year-round</li>
+          <li>Wearable tracker setup + configuration</li>
+          <li>Somatic app with level progression + score</li>
+          <li>12 months of continuous data monitoring</li>
+          <li>Personalized recommendations + health plan</li>
+          <li>Direct physician messaging</li>
+        </ul>
+        <div class="price-divider"></div>
+        <p class="summary">We monitor, diagnose, and recommend. You execute the plan on your own.</p>
+        <a href="#cta" class="pricing-cta">Get Started</a>
+      </div>
+
+      <!-- Max -->
+      <div class="pricing-card max">
+        <div class="tier-label">Max</div>
+        <div class="price">$35,000</div>
+        <div class="price-sub">per year</div>
+        <div class="price-divider"></div>
+        <ul class="pricing-list">
+          <li>Everything in Basic</li>
+          <li>All treatments + interventions included</li>
+          <li>Access to Optimization-level protocols</li>
+          <li>Access to Experimental-level protocols</li>
+          <li>Specialist consultations (cardiology, oncology, etc.)</li>
+          <li>Advanced diagnostics + imaging</li>
+          <li>Priority scheduling + concierge support</li>
+          <li>Hotel + transport for clinic visits</li>
+        </ul>
+        <div class="price-divider"></div>
+        <p class="summary">We monitor, diagnose, recommend — and execute. Every treatment, handled.</p>
+        <a href="#cta" class="pricing-cta">Get Started</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<div class="divider-section"><div class="divider"></div></div>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- FINAL STATEMENT                             -->
+<!-- ════════════════════════════════════════════ -->
+<section>
+  <div class="container" style="text-align:center; max-width:700px;">
+    <h1>You don't manage<br/>your health.<br/><em style="font-style:italic; color:var(--accent);">We do.</em></h1>
+    <p class="large" style="margin-top:2rem;">No dashboards to decode. No spreadsheets of biomarkers. One score tells you if you're on track. One doctor calls you if you're not.</p>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- CTA — FULL BLEED                            -->
+<!-- ════════════════════════════════════════════ -->
+<section class="dark-section" id="cta" style="text-align:center; padding:6rem 0;">
+  <div class="container" style="max-width:700px;">
+    <h2 class="display" style="color:var(--white);">Start your first year.</h2>
+    <p class="large" style="margin-top:1.5rem; margin-bottom:2.5rem; color:#999;">One test. One doctor. Twelve months of clarity.</p>
+    <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+      <a href="#" class="cta-button">
+        Book your diagnostic
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+      </a>
+      <a href="somatic-manifesto.html" class="cta-button outline-white">
+        Read the manifesto
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════ -->
+<!-- FOOTER                                      -->
+<!-- ════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <p>&copy; 2026 Somatic. Evidence-based longevity.</p>
+  </div>
+</footer>
+
+<script>
+(function() {
+  // ─── NAV: transparent → solid on scroll ───
+  const nav = document.querySelector('nav');
+  const heroEl = document.querySelector('.hero');
+
+  function updateNav() {
+    if (!heroEl || !nav) return;
+    const heroBottom = heroEl.getBoundingClientRect().bottom;
+    if (heroBottom < 60) {
+      nav.classList.add('nav-scrolled');
+    } else {
+      nav.classList.remove('nav-scrolled');
+    }
+  }
+
+  window.addEventListener('scroll', updateNav, { passive: true });
+  updateNav();
+
+  // ─── LEVEL PANELS ───
+  const panels = document.querySelectorAll('.level-panel');
+  const vh = () => window.innerHeight;
+
+  function update() {
+    panels.forEach(panel => {
+      const rect = panel.getBoundingClientRect();
+      const overlay = panel.querySelector('.level-video-overlay');
+      const textInner = panel.querySelector('.level-text-inner');
+      const measurements = panel.querySelector('.level-measurements');
+      if (!overlay || !textInner) return;
+
+      // progress: 0 = panel top at viewport bottom, 1 = panel top at viewport top
+      // Beyond 1 = we're scrolling deeper into the panel
+      const panelH = panel.offsetHeight;
+      const scrolled = -rect.top;                    // how far into the panel
+      const progress = scrolled / (panelH - vh());   // 0→1 over scroll range
+
+      // ── OVERLAY ──
+      // Early: light overlay (see the video). Middle: darker (text is showing). Late: lifts again.
+      let overlayOpacity;
+      if (progress < 0.1) {
+        overlayOpacity = 0.2;
+      } else if (progress < 0.5) {
+        // Darken as text appears
+        overlayOpacity = 0.2 + ((progress - 0.1) / 0.4) * 0.35;
+      } else if (progress < 0.85) {
+        // Hold dark while text is visible
+        overlayOpacity = 0.55;
+      } else {
+        // Lift as we scroll out — reveal the video
+        overlayOpacity = 0.55 - ((progress - 0.85) / 0.15) * 0.4;
+      }
+      overlay.style.opacity = Math.max(0.1, Math.min(0.6, overlayOpacity));
+
+      // ── TEXT + MEASUREMENTS REVEAL ──
+      const panelTop = rect.top;
+
+      textInner.classList.remove('show-description');
+      if (measurements) measurements.classList.remove('show-measurements');
+
+      // Description appears when video sticks (panel top hits viewport top)
+      if (panelTop <= 0) textInner.classList.add('show-description');
+
+      // Measurements appear later — when user has scrolled further into the panel
+      if (measurements && panelTop <= -vh() * 0.4) {
+        measurements.classList.add('show-measurements');
+      }
+    });
+
+    requestAnimationFrame(update);
+  }
+
+  requestAnimationFrame(update);
+})();
+</script>
+
+</body>
+</html>
