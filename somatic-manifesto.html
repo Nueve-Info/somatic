@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Somatic — Health, Simplified</title>
+  <title>Somatic - Health, Simplified</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -92,27 +92,10 @@
       text-align: center;
       padding: 6rem 0;
       position: relative;
-      background: url('assets/hero-bg.png') center/cover no-repeat;
-      overflow: hidden;
-    }
-
-    .hero::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        to bottom,
-        rgba(0,0,0,0) 0%,
-        rgba(0,0,0,0.475) 56%,
-        rgba(0,0,0,0.808) 82%,
-        rgba(0,0,0,0.9) 100%
-      );
-      z-index: 0;
+      background: #0A0A0A;
     }
 
     .hero .container {
-      position: relative;
-      z-index: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -627,7 +610,7 @@
       color: var(--gray);
     }
 
-    /* ─── NAV ─── */
+    /* ─── NAV — always transparent with gradient for visibility ─── */
     nav {
       position: fixed;
       top: 0;
@@ -638,9 +621,19 @@
       justify-content: space-between;
       align-items: center;
       z-index: 100;
-      background: rgba(248, 246, 243, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: transparent;
+    }
+
+    nav::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 120px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 100%);
+      z-index: -1;
+      pointer-events: none;
     }
 
     .logo {
@@ -648,23 +641,35 @@
       font-weight: 600;
       font-size: 1.05rem;
       letter-spacing: -0.02em;
-      color: var(--black);
+      color: var(--white);
       text-decoration: none;
+      transition: color 0.4s ease;
     }
 
-    .nav-cta {
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .nav-link {
       font-size: 0.85rem;
       font-weight: 500;
-      padding: 0.65rem 1.5rem;
-      background: var(--black);
-      color: var(--white);
-      border-radius: 100px;
+      color: rgba(255,255,255,0.7);
       text-decoration: none;
-      transition: background 0.3s ease;
+      transition: color 0.4s ease;
     }
 
-    .nav-cta:hover {
-      background: #222;
+    .nav-link:hover {
+      color: var(--white);
+    }
+
+    .nav-link.active {
+      color: var(--white);
+    }
+
+    @media (max-width: 600px) {
+      .nav-link { display: none; }
     }
 
   </style>
@@ -675,8 +680,11 @@
 <!-- NAV                                         -->
 <!-- ════════════════════════════════════════════ -->
 <nav>
-  <a href="#" class="logo">Somatiq</a>
-  <a href="#" class="nav-cta">Get Started</a>
+  <a href="#" class="logo">Somatic</a>
+  <div class="nav-links">
+    <a href="somatic-manifesto.html" class="nav-link active">Manifesto</a>
+    <a href="somatic-product.html" class="nav-link">The System</a>
+  </div>
 </nav>
 
 
@@ -729,13 +737,13 @@
       <div>
         <h3>The Suggestion Effect</h3>
         <h2>Your sleep score is lying to you.</h2>
-        <p>When your tracker says you slept well, you feel great. When it says you didn't — even if you woke up feeling fine — suddenly you're sluggish, irritable, defeated. The number overwrites your own experience.</p>
+        <p>When your tracker says you slept well, you feel great. When it says you didn't, even if you woke up feeling fine, suddenly you're sluggish, irritable, defeated. The number overwrites your own experience.</p>
         <p>This is the power of suggestion dressed up as science. The device isn't measuring your wellbeing. It's dictating it.</p>
       </div>
       <div class="image-block" style="margin:0;">
         <div class="image-placeholder image-placeholder-square">
           <span class="label">Image 2</span>
-          <span class="desc">Split illustration: Left side — a person waking up refreshed, sun streaming in. Right side — the same person looking at their watch showing "Sleep Score: 52" and slumping. Minimal line-art style.</span>
+          <span class="desc">Split illustration: Left side: a person waking up refreshed, sun streaming in. Right side: the same person looking at their watch showing "Sleep Score: 52" and slumping. Minimal line-art style.</span>
         </div>
       </div>
     </div>
@@ -751,7 +759,7 @@
     <h3>The Precision Myth</h3>
     <h2>Trackers aren't that accurate.</h2>
 
-    <p class="large">Most wearable sensors carry significant margins of error. You're making decisions based on approximations — dressed up to look like certainty.</p>
+    <p class="large">Most wearable sensors carry significant margins of error. You're making decisions based on approximations, dressed up to look like certainty.</p>
 
     <div class="research-grid">
       <div class="research-card"><span>Research data</span></div>
@@ -760,7 +768,7 @@
       <div class="research-card"><span>Research data</span></div>
     </div>
 
-    <p>Your wrist-based glucose estimate, your ring's sleep staging, your watch's blood oxygen reading — they're directional at best. And when you start making real health decisions based on fuzzy inputs, you're not optimizing. You're gambling.</p>
+    <p>Your wrist-based glucose estimate, your ring's sleep staging, your watch's blood oxygen reading. They're directional at best. And when you start making real health decisions based on fuzzy inputs, you're not optimizing. You're gambling.</p>
   </div>
 </section>
 
@@ -776,7 +784,7 @@
     <div class="two-col">
       <div>
         <p class="large">While you're obsessing over your glucose curve after a banana, you might be walking around with undiagnosed high blood pressure, a genetic predisposition to heart disease, or joint degeneration that's silently progressing.</p>
-        <p>The tracker shows what's easy to measure — not what matters most. And so you pour energy into micro-optimizing metrics that rank low on the list of things that will actually keep you alive and well.</p>
+        <p>The tracker shows what's easy to measure. Not what matters most. And so you pour energy into micro-optimizing metrics that rank low on the list of things that will actually keep you alive and well.</p>
         <p>There's no holistic view. Your tracker does its thing. Your doctor does theirs. Your lab results sit in a portal you logged into once. Everything is disconnected, and nobody is looking at the full picture.</p>
       </div>
       <div class="image-block" style="margin:0;">
@@ -815,7 +823,7 @@
         <img src="assets/risk-blood.png" alt="Blood test" />
         <div class="risk-overlay">
           <h4>Blood Test Cascades</h4>
-          <p>Every blood draw that surfaces an outlier triggers follow-up tests, specialist referrals, and interventions — many of which wouldn't have been necessary. Each contact with the clinical system is a vector for overtreatment.</p>
+          <p>Every blood draw that surfaces an outlier triggers follow-up tests, specialist referrals, and interventions, many of which wouldn't have been necessary. Each contact with the clinical system is a vector for overtreatment.</p>
         </div>
       </div>
       <div class="risk-card-v2">
@@ -842,7 +850,7 @@
       </div>
     </div>
 
-    <p>Over-measurement doesn't make you healthier. It puts you on a treadmill of intervention — fixing things that weren't broken, stressing systems that were doing fine, and replacing peace of mind with permanent vigilance.</p>
+    <p>Over-measurement doesn't make you healthier. It puts you on a treadmill of intervention. Fixing things that weren't broken, stressing systems that were doing fine, and replacing peace of mind with permanent vigilance.</p>
   </div>
 </section>
 
@@ -853,13 +861,13 @@
 <section>
   <div class="container" style="text-align:center; max-width:700px;">
     <h3>The Shift</h3>
-    <h2>What if the answer isn't more data — but better thinking?</h2>
+    <h2>What if the answer isn't more data, but better thinking?</h2>
     <p class="large" style="margin-top:1.5rem;">The problem was never a lack of information. It was a lack of structure. A lack of priorities. A lack of someone telling you: <strong>this is what matters right now, for you, today.</strong></p>
 
     <div class="image-block">
       <div class="image-placeholder">
         <span class="label">Image 6</span>
-        <span class="desc">A visual transition moment — chaos on the left (scattered data, numbers, graphs) flowing into calm order on the right (a single, clear path or a clean, simple interface). Gradient from gray/noisy to warm/clear.</span>
+        <span class="desc">A visual transition moment: chaos on the left (scattered data, numbers, graphs) flowing into calm order on the right (a single, clear path or a clean, simple interface). Gradient from gray/noisy to warm/clear.</span>
       </div>
     </div>
   </div>
@@ -874,21 +882,21 @@
     <h3>The Somatic Approach</h3>
     <h2>Connect everything.<br/>Then simplify.</h2>
 
-    <p class="large">The first step isn't tracking more. It's connecting what already exists — your medical records, your lab work, your wearable data, your family history — into one unified picture, supervised by a real doctor who sees all of it.</p>
+    <p class="large">The first step isn't tracking more. It's connecting what already exists, your medical records, your lab work, your wearable data, your family history, into one unified picture, supervised by a real doctor who sees all of it.</p>
 
     <div class="step-flow">
       <div class="step">
         <div class="step-number">1</div>
         <div class="step-content">
           <h4>Unify your data</h4>
-          <p>We bring together every data source that already exists — wearables, labs, imaging, clinical history — into a single, coherent health profile. No more fragmented portals and disconnected systems.</p>
+          <p>We bring together every data source that already exists. Wearables, labs, imaging, clinical history. Into a single, coherent health profile. No more fragmented portals and disconnected systems.</p>
         </div>
       </div>
       <div class="step">
         <div class="step-number">2</div>
         <div class="step-content">
           <h4>Assign a supervising physician</h4>
-          <p>A real doctor reviews your complete picture — not a chatbot, not an algorithm, not a score. A physician who understands context, nuance, and you as an individual.</p>
+          <p>A real doctor reviews your complete picture. Not a chatbot, not an algorithm, not a score. A physician who understands context, nuance, and you as an individual.</p>
         </div>
       </div>
       <div class="step">
@@ -917,7 +925,7 @@
   <div class="container">
     <h3>The Framework</h3>
     <h2>Health in three layers.<br/>In the right order.</h2>
-    <p class="large" style="margin-bottom:2rem;">We separate health into three pillars — and we believe the order matters more than most people think. You wouldn't furnish a house before laying the foundation. Don't optimize your biology before securing the basics.</p>
+    <p class="large" style="margin-bottom:2rem;">We separate health into three pillars, and we believe the order matters more than most people think. You wouldn't furnish a house before laying the foundation. Don't optimize your biology before securing the basics.</p>
 
     <!-- Pillar 1 -->
     <div class="pillar">
@@ -926,14 +934,14 @@
       <h2>The foundation that keeps you alive.</h2>
       <div class="two-col" style="margin-top:2rem;">
         <div>
-          <p>Resting heart rate. Blood pressure. Fasting glucose. BMI. Basic bloodwork. These aren't glamorous metrics — they don't make for exciting biohacking content. But they are the single most predictive indicators of immediate health risk and long-term survival.</p>
+          <p>Resting heart rate. Blood pressure. Fasting glucose. BMI. Basic bloodwork. These aren't glamorous metrics. They don't make for exciting biohacking content. But they are the single most predictive indicators of immediate health risk and long-term survival.</p>
           <p>If your blood pressure is elevated, nothing else matters until that's addressed. If your resting heart rate is creeping up, that signal outranks your sleep staging data by orders of magnitude.</p>
           <p><strong>Basics first. Always.</strong></p>
         </div>
         <div class="image-block" style="margin:0;">
           <div class="image-placeholder image-placeholder-small">
             <span class="label">Image 8</span>
-            <span class="desc">A strong, stable foundation visual — a building's base, architectural blueprint style. Core metrics (heart rate, blood pressure) labeled cleanly. Earth tones, green accents. Solid, grounding feel.</span>
+            <span class="desc">A strong, stable foundation visual: a building's base, architectural blueprint style. Core metrics (heart rate, blood pressure) labeled cleanly. Earth tones, green accents. Solid, grounding feel.</span>
           </div>
         </div>
       </div>
@@ -946,7 +954,7 @@
       <h2>The advantages that compound over decades.</h2>
       <div class="two-col" style="margin-top:2rem;">
         <div>
-          <p>Once your basics are solid, we move to optimization — the metrics that don't cause immediate emergencies but profoundly shape how you age.</p>
+          <p>Once your basics are solid, we move to optimization. The metrics that don't cause immediate emergencies but profoundly shape how you age.</p>
           <p>Muscle mass: proven to be one of the strongest predictors of longevity and quality of life after 50. Hearing health: emerging research links hearing loss directly to cognitive decline and dementia risk. Bone density. Metabolic flexibility. Inflammatory markers.</p>
           <p>These are the things that separate aging well from aging painfully. But they only matter once the foundation is secure.</p>
         </div>
@@ -963,17 +971,17 @@
     <div class="pillar">
       <div class="pillar-number">03</div>
       <span class="pillar-label experimental">Experimental</span>
-      <h2>The frontier — for those who've earned it.</h2>
+      <h2>The frontier, for those who've earned it.</h2>
       <div class="two-col" style="margin-top:2rem;">
         <div>
-          <p>This is where most biohackers start — and where they should finish. Peptides, NAD+ infusions, hyperbaric chambers, cutting-edge longevity protocols. The bleeding edge of what medicine knows and what it's still figuring out.</p>
+          <p>This is where most biohackers start, and where they should finish. Peptides, NAD+ infusions, hyperbaric chambers, cutting-edge longevity protocols. The bleeding edge of what medicine knows and what it's still figuring out.</p>
           <p>We don't dismiss it. Some of it is genuinely promising. But jumping to experimental interventions before securing your basics is like installing a racing engine in a car with bald tires.</p>
           <p><strong>Earn the right to experiment</strong> by taking care of what's proven first.</p>
         </div>
         <div class="image-block" style="margin:0;">
           <div class="image-placeholder image-placeholder-small">
             <span class="label">Image 10</span>
-            <span class="desc">The top of the building — a rooftop with a telescope or antenna pointing upward. Experimental icons: DNA strand, molecule, futuristic capsule. Warm amber tones. Aspirational, slightly sci-fi, but grounded by the structure below.</span>
+            <span class="desc">The top of the building: a rooftop with a telescope or antenna pointing upward. Experimental icons: DNA strand, molecule, futuristic capsule. Warm amber tones. Aspirational, slightly sci-fi, but grounded by the structure below.</span>
           </div>
         </div>
       </div>
@@ -988,14 +996,14 @@
 <section class="accent-section">
   <div class="container" style="text-align:center; max-width:750px;">
     <h3>Your Biomarkers</h3>
-    <h2>We compare you to you — not to averages.</h2>
-    <p class="large" style="margin-top:1.5rem;">Population averages are skewed, noisy, and often misleading. A "normal" cholesterol level means nothing if your personal trend is climbing fast. A "low" heart rate might be your normal — or it might be a warning.</p>
-    <p style="margin-top:1rem;">Somatic tracks your biomarkers against your own history, your own trajectory, your own body. Your doctor interprets your data in context — not against a bell curve of strangers.</p>
+    <h2>We compare you to you. Not to averages.</h2>
+    <p class="large" style="margin-top:1.5rem;">Population averages are skewed, noisy, and often misleading. A "normal" cholesterol level means nothing if your personal trend is climbing fast. A "low" heart rate might be your normal, or it might be a warning.</p>
+    <p style="margin-top:1rem;">Somatic tracks your biomarkers against your own history, your own trajectory, your own body. Your doctor interprets your data in context. Not against a bell curve of strangers.</p>
 
     <div class="image-block">
       <div class="image-placeholder">
         <span class="label">Image 11</span>
-        <span class="desc">Two charts side by side. Left: "Population Average" — a flat, generic reference line with a data point on it (meaningless). Right: "Your Curve" — a personalized trend line with context, trajectory arrows, and a doctor's annotation. The right chart feels alive and meaningful.</span>
+        <span class="desc">Two charts side by side. Left: "Population Average": a flat, generic reference line with a data point on it (meaningless). Right: "Your Curve": a personalized trend line with context, trajectory arrows, and a doctor's annotation. The right chart feels alive and meaningful.</span>
       </div>
     </div>
   </div>
@@ -1020,7 +1028,7 @@
     <div class="image-block">
       <div class="image-placeholder">
         <span class="label">Image 12</span>
-        <span class="desc">A single, clean Somatic interface screen — minimal, calm, showing just one or two key metrics and a doctor's note. White space everywhere. The visual opposite of the chaotic dashboard from Image 1. Serenity as a product.</span>
+        <span class="desc">A single, clean Somatic interface screen. Minimal, calm, showing just one or two key metrics and a doctor's note. White space everywhere. The visual opposite of the chaotic dashboard from Image 1. Serenity as a product.</span>
       </div>
     </div>
   </div>

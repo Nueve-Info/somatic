@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Somatic — The System</title>
+  <title>Somatic - The System</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -92,7 +92,7 @@
       line-height: 1.75;
     }
 
-    /* ─── NAV ─── */
+    /* ─── NAV — always transparent with gradient for visibility ─── */
     nav {
       position: fixed;
       top: 0;
@@ -104,40 +104,18 @@
       align-items: center;
       z-index: 100;
       background: transparent;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-      transition: background 0.4s ease, backdrop-filter 0.4s ease;
     }
 
-    /* Scrolled state — added by JS */
-    nav.nav-scrolled {
-      background: rgba(248, 246, 243, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-    }
-
-    nav.nav-scrolled .logo {
-      color: var(--black);
-    }
-
-    nav.nav-scrolled .nav-link {
-      color: var(--gray);
-    }
-
-    nav.nav-scrolled .nav-link:hover,
-    nav.nav-scrolled .nav-link.active {
-      color: var(--black);
-    }
-
-    /* Top gradient so white nav text is readable over the dark hero image */
-    .hero-top-gradient {
-      position: absolute;
+    /* Persistent top gradient across all pages for nav readability */
+    nav::before {
+      content: '';
+      position: fixed;
       top: 0;
       left: 0;
       right: 0;
       height: 120px;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 100%);
-      z-index: 3;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 100%);
+      z-index: -1;
       pointer-events: none;
     }
 
@@ -192,6 +170,8 @@
       position: absolute;
       inset: 0;
       z-index: 1;
+      background: #0a0a0a;
+      overflow: hidden;
     }
 
     .hero-image .image-placeholder {
@@ -218,7 +198,8 @@
 
     .hero-content h1 {
       color: var(--white);
-      max-width: 650px;
+      max-width: 750px;
+      font-size: clamp(3.5rem, 8vw, 6.5rem);
     }
 
     .hero-content h1 em {
@@ -227,13 +208,13 @@
     }
 
     .hero-right {
-      max-width: 340px;
+      max-width: 420px;
       flex-shrink: 0;
     }
 
     .hero-right p {
       color: rgba(255,255,255,0.7);
-      font-size: 1.05rem;
+      font-size: 1.25rem;
       line-height: 1.7;
       margin-bottom: 1.5rem;
     }
@@ -254,9 +235,25 @@
       border-bottom: 1px solid rgba(255,255,255,0.2);
     }
 
+    /* Mobile-only dark overlay on hero video for text readability */
+    .hero-mobile-overlay {
+      display: none;
+    }
+
     @media (max-width: 768px) {
       .hero-content .container-wide { flex-direction: column; align-items: flex-start; }
       .hero-right { max-width: 100%; }
+      .hero-mobile-overlay {
+        display: block;
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.35);
+        z-index: 2;
+        pointer-events: none;
+      }
+      .hero-content {
+        z-index: 3;
+      }
     }
 
     /* ─── CTA BUTTONS ─── */
@@ -487,9 +484,13 @@
        (unlike overflow:hidden which creates a new scroll context). */
     .level-panel {
       position: relative;
-      height: 180vh;
-      clip-path: inset(0);
+      min-height: 100vh;
     }
+
+    /* Solid backgrounds contain content between panels — no clip-path needed */
+    [data-level="1"] { background: rgb(20, 50, 30); }
+    [data-level="2"] { background: rgb(15, 30, 55); }
+    [data-level="3"] { background: rgb(50, 35, 10); }
 
     /* The sticky video/image background — locks to viewport */
     .level-video-wrap {
@@ -499,6 +500,7 @@
       height: 100vh;
       overflow: hidden;
       z-index: 1;
+      background: #0a0a0a;
     }
 
     .level-video-wrap .image-placeholder {
@@ -515,14 +517,18 @@
       object-fit: cover;
     }
 
-    /* Dark overlay — JS controls opacity based on scroll position */
+    /* Colored overlay — JS controls opacity based on scroll position */
     .level-video-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(0, 0, 0, 0.5);
       z-index: 2;
       pointer-events: none;
     }
+
+    /* Per-level overlay colors — at full opacity these give ~90% coverage */
+    [data-level="1"] .level-video-overlay { background: rgba(20, 50, 30, 0.9); }
+    [data-level="2"] .level-video-overlay { background: rgba(15, 30, 55, 0.9); }
+    [data-level="3"] .level-video-overlay { background: rgba(50, 35, 10, 0.9); }
 
     /* Text layer — scrolls naturally over the sticky video.
        NOT sticky — the user keeps full scroll control. */
@@ -535,7 +541,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 25vh 0 64vh;
+      padding: 500px 0 200px;
     }
 
     .level-text-inner {
@@ -568,30 +574,13 @@
       margin-top: 0.5rem;
     }
 
-    .level-text-inner .level-description {
-      margin-top: 3rem;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.5s ease, transform 0.5s ease;
-    }
-
-    .level-text-inner .level-description p {
-      color: rgba(255,255,255,0.85);
-      font-size: 1.15rem;
-      line-height: 1.75;
-      text-shadow: 0 1px 20px rgba(0,0,0,0.3);
-    }
-
-    /* ── Staged reveal: description animates in ── */
-    .level-text-inner.show-description .level-description {
-      opacity: 1; transform: translateY(0);
-    }
+    /* (description now lives inside measurements block) */
 
     /* ─── MEASUREMENTS SECTION — pinned to bottom of panel ─── */
     .level-measurements {
       position: relative;
       z-index: 3;
-      padding: 0 2rem;
+      padding: 0 2rem 400px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -609,6 +598,14 @@
     .measurements-inner {
       max-width: 480px;
       width: 100%;
+    }
+
+    .measurements-description {
+      color: rgba(255,255,255,0.75);
+      font-size: 1.1rem;
+      line-height: 1.75;
+      text-align: center;
+      margin-bottom: 2rem;
     }
 
     .measurements-header {
@@ -655,8 +652,123 @@
     }
 
     @media (max-width: 768px) {
-      .level-panel { height: 170vh; }
+      /* Same sticky behavior as desktop — just tighter spacing */
+      .level-text-scroll { padding: 300px 0 150px; }
       .level-text-inner { max-width: 100%; padding: 0 1.5rem; }
+      .level-measurements { padding: 0 1.5rem 200px; }
+    }
+
+    /* ─── SYSTEM COMPONENTS (What's Inside) ─── */
+    .system-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      margin: 4rem 0 0;
+      background: rgba(0,0,0,0.06);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .system-card {
+      background: var(--white);
+      padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .system-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .system-card h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      line-height: 1.25;
+    }
+
+    .system-card p {
+      font-size: 0.95rem;
+      color: #666;
+      line-height: 1.65;
+    }
+
+    .system-card.card-wide {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 768px) {
+      .system-grid { grid-template-columns: 1fr; }
+      .system-card.card-wide { grid-column: auto; }
+    }
+
+    /* Lifeline visual */
+    .lifeline-visual {
+      position: relative;
+      margin: 3rem 0;
+      padding: 3rem 0;
+    }
+
+    .lifeline-line {
+      height: 3px;
+      border-radius: 2px;
+      background: linear-gradient(to right, #ccc 0%, #ccc 30%, var(--accent) 30%, var(--red-muted) 60%, var(--accent) 100%);
+      position: relative;
+    }
+
+    .lifeline-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1rem;
+    }
+
+    .lifeline-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray);
+    }
+
+    .lifeline-label.active {
+      color: var(--accent);
+    }
+
+    .lifeline-events {
+      display: flex;
+      justify-content: space-around;
+      margin-top: -1.5rem;
+      position: relative;
+    }
+
+    .lifeline-event {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .lifeline-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 3px solid var(--accent);
+      background: var(--white);
+    }
+
+    .lifeline-event span {
+      font-size: 0.75rem;
+      color: var(--gray);
+      white-space: nowrap;
     }
 
     /* ─── STAT ROW ─── */
@@ -1001,6 +1113,172 @@
     }
     .pricing-card.max .pricing-cta:hover { background: #e8e4de; }
 
+    /* ─── FLYWHEEL ─── */
+    .flywheel-container {
+      display: flex;
+      justify-content: center;
+      margin: 6rem 0 4rem;
+    }
+
+    .flywheel {
+      position: relative;
+      width: 420px;
+      height: 420px;
+    }
+
+    .flywheel-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 2;
+    }
+
+    .flywheel-center h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 0.25rem;
+    }
+
+    .flywheel-center span {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .flywheel-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+
+    .flywheel-ring::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      border-top-color: rgba(255,255,255,0.4);
+      animation: spin 12s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .flywheel-node {
+      position: absolute;
+      text-align: center;
+      width: 140px;
+      transform: translate(-50%, -50%);
+    }
+
+    .flywheel-node-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      margin: 0 auto 0.75rem;
+      color: var(--white);
+      filter: grayscale(1) brightness(2);
+    }
+
+    .flywheel-node h5 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 0.25rem;
+    }
+
+    .flywheel-node p {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.4;
+    }
+
+    /* Position nodes around the circle */
+    .flywheel-node.top    { top: -4%;  left: 50%; }
+    .flywheel-node.right  { top: 50%;  left: 106%; }
+    .flywheel-node.bottom { top: 104%; left: 50%; }
+    .flywheel-node.left   { top: 50%;  left: -6%; }
+
+    @media (max-width: 600px) {
+      .flywheel { width: 300px; height: 300px; }
+      .flywheel-node { width: 110px; }
+      .flywheel-node h5 { font-size: 0.78rem; }
+      .flywheel-center h4 { font-size: 1.1rem; }
+    }
+
+    /* ─── DOCTOR CARDS ─── */
+    .doctor-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      margin: 3rem 0 0;
+    }
+
+    .doctor-card {
+      text-align: center;
+      padding: 2rem 1rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+    }
+
+    .doctor-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      margin: 0 auto 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      color: var(--white);
+      filter: grayscale(1) brightness(2);
+    }
+
+    .doctor-card h5 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 0.25rem;
+    }
+
+    .doctor-card .doctor-role {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.05em;
+    }
+
+    .doctor-card .doctor-quote {
+      font-size: 0.85rem;
+      font-style: italic;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.5;
+      margin-top: 0.75rem;
+    }
+
+    @media (max-width: 768px) {
+      .doctor-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .doctor-grid { grid-template-columns: 1fr; }
+    }
+
     /* ─── VISUAL TIMELINE (annual flow) ─── */
     .year-timeline {
       position: relative;
@@ -1157,48 +1435,17 @@
 <!-- HERO — FULL BLEED VISUAL                    -->
 <!-- ════════════════════════════════════════════ -->
 <section class="hero">
-  <div class="hero-top-gradient"></div>
-  <div class="hero-image dark-context">
-    <div class="image-placeholder image-fullbleed" style="aspect-ratio:auto; min-height:100vh;">
-      <span class="label">Hero Image</span>
-      <span class="desc">Full-bleed cinematic shot: a person walking into a bright, architecturally stunning clinical space. Floor-to-ceiling glass, warm wood paneling, soft ambient light. Shot from behind — they're stepping into something new. High-end, calm, intentional. Think Neko body scan aesthetic meets luxury hotel lobby.</span>
-    </div>
+  <div class="hero-image">
+    <iframe src="https://player.vimeo.com/video/1175259898?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1&loop=1&background=1" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" style="position:absolute;top:50%;left:50%;width:177.78vh;height:100vh;min-width:100%;min-height:56.25vw;transform:translate(-50%,-50%);" title="Hero Video"></iframe>
+    <div class="hero-mobile-overlay"></div>
   </div>
   <div class="hero-content">
     <div class="container-wide">
       <div>
-        <span class="hero-context">You've read <a href="somatic-manifesto.html">the manifesto</a></span>
         <h1>Live healthy<br/><em>100 years.</em></h1>
       </div>
       <div class="hero-right">
-        <p>A complete healthcare system — annual diagnostics, continuous monitoring, wearable trackers, and a personal physician — designed to extend both your lifespan and your healthspan through evidence-based medicine.</p>
-        <a href="#how-it-works" class="cta-button">
-          See how it works
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ════════════════════════════════════════════ -->
-<!-- STATS BAR                                   -->
-<!-- ════════════════════════════════════════════ -->
-<section class="cream-section" style="padding:5rem 0;">
-  <div class="container-wide">
-    <div class="stat-row" style="margin:0;">
-      <div class="stat-item">
-        <div class="number">4h</div>
-        <div class="label">Complete diagnostic</div>
-      </div>
-      <div class="stat-item">
-        <div class="number">365</div>
-        <div class="label">Days of continuous monitoring</div>
-      </div>
-      <div class="stat-item">
-        <div class="number">1</div>
-        <div class="label">Score to track</div>
+        <p>A complete healthcare system combining annual diagnostics with continuous monitoring so you live longer, healthier, and stronger.</p>
       </div>
     </div>
   </div>
@@ -1208,11 +1455,11 @@
 <!-- ════════════════════════════════════════════ -->
 <!-- THE PREMISE — SHORT + VISUAL                -->
 <!-- ════════════════════════════════════════════ -->
-<section>
+<section style="padding:10rem 0;">
   <div class="container" style="text-align:center; max-width:750px;">
     <h3>The Premise</h3>
     <h2 class="display">The right things.<br/><em style="font-style:italic; color:var(--accent);">In the right order.</em></h2>
-    <p class="large" style="margin-top:1.5rem;">Health has a sequence. Skip steps and nothing sticks. Follow the order and everything compounds. Somatic guides you through three levels — each one unlocked only when the previous is stable.</p>
+    <p class="large" style="margin-top:1.5rem;">Health has a sequence. Skip steps and nothing sticks. Follow the order and everything compounds. Somatic guides you through three levels, each one unlocked only when the previous is stable.</p>
   </div>
 </section>
 
@@ -1226,24 +1473,18 @@
   <!-- ── LEVEL 1 — BASICS ── -->
   <div class="level-panel" data-level="1">
     <div class="level-video-wrap">
-      <!-- Replace with <video> when real assets are ready -->
-      <div class="image-placeholder" style="background:linear-gradient(135deg, #2a3d30 0%, #1a2820 40%, #0d1510 100%);">
-        <span class="label">Level 1 — Video / Full Bleed</span>
-        <span class="desc">Looping cinematic video: a patient during a body composition scan. Slow camera movement around the subject. Soft directional light, electrodes subtly visible. Intimate, editorial — a fashion shoot crossed with medical photography. Warm natural tones, shallow depth of field. The body as landscape.</span>
-      </div>
+      <iframe src="https://player.vimeo.com/video/1175217806?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1&loop=1&background=1" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" style="position:absolute;top:50%;left:50%;width:177.78vh;height:100vh;min-width:100%;min-height:56.25vw;transform:translate(-50%,-50%);" title="Level 1"></iframe>
       <div class="level-video-overlay"></div>
     </div>
     <div class="level-text-scroll">
       <div class="level-text-inner">
-        <span class="level-label basics">Level 1 — Basics</span>
+        <span class="level-label basics">Level 1 / Basics</span>
         <h2>Fix what can kill you first.</h2>
-        <div class="level-description">
-          <p>The foundation. The metrics that predict whether you'll be alive and well in ten years — the ones that outrank every supplement stack by orders of magnitude.</p>
-        </div>
       </div>
     </div>
     <div class="level-measurements">
       <div class="measurements-inner">
+        <p class="measurements-description">The foundation. The metrics that predict whether you'll be alive and well in ten years. The ones that outrank every supplement stack by orders of magnitude.</p>
         <div class="measurements-header">Measurements</div>
         <div class="measurement-item">
           <div class="measurement-icon">♥</div>
@@ -1276,23 +1517,18 @@
   <!-- ── LEVEL 2 — OPTIMIZATION ── -->
   <div class="level-panel" data-level="2">
     <div class="level-video-wrap">
-      <div class="image-placeholder" style="background:linear-gradient(135deg, #1e2d3d 0%, #162233 40%, #0a1520 100%);">
-        <span class="label">Level 2 — Video / Full Bleed</span>
-        <span class="desc">Looping cinematic video: a person mid-movement during a VO2 max test or controlled strength exercise. Close camera, confident posture, blue-shifted ambient light. Athletic but not gym-bro — medical precision meets human performance. Slow-motion details of muscle contraction, breathing rhythm.</span>
-      </div>
+      <iframe src="https://player.vimeo.com/video/1175218094?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1&loop=1&background=1" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" style="position:absolute;top:50%;left:50%;width:177.78vh;height:100vh;min-width:100%;min-height:56.25vw;transform:translate(-50%,-50%);" title="Level 2"></iframe>
       <div class="level-video-overlay"></div>
     </div>
     <div class="level-text-scroll">
       <div class="level-text-inner">
-        <span class="level-label optimize">Level 2 — Optimization</span>
+        <span class="level-label optimize">Level 2 / Optimization</span>
         <h2>Protect what erodes quietly.</h2>
-        <div class="level-description">
-          <p>Muscle mass, hearing health, bone density — the things that don't cause emergencies but shape how you age over decades. Every fall becomes dangerous without muscle. Hearing loss links directly to dementia risk.</p>
-        </div>
       </div>
     </div>
     <div class="level-measurements">
       <div class="measurements-inner">
+        <p class="measurements-description">Muscle mass, hearing health, bone density. The things that don't cause emergencies but shape how you age over decades. Every fall becomes dangerous without muscle. Hearing loss links directly to dementia risk.</p>
         <div class="measurements-header">Measurements</div>
         <div class="measurement-item">
           <div class="measurement-icon">💪</div>
@@ -1321,23 +1557,18 @@
   <!-- ── LEVEL 3 — EXPERIMENTAL ── -->
   <div class="level-panel" data-level="3">
     <div class="level-video-wrap">
-      <div class="image-placeholder" style="background:linear-gradient(135deg, #2a1f10 0%, #1a1208 40%, #0a0805 100%);">
-        <span class="label">Level 3 — Video / Full Bleed</span>
-        <span class="desc">Looping cinematic video: abstract molecular structures or DNA helix rotating in warm amber light against deep black. Or a cutting-edge lab — glass, steel, soft golden glow. Organic forms that feel scientific but beautiful. Dark, cinematic, premium. Macro shots of liquid in vials, peptide crystals, precision instruments. The future of medicine.</span>
-      </div>
+      <iframe src="https://player.vimeo.com/video/1175236527?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1&loop=1&background=1" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" style="position:absolute;top:50%;left:50%;width:177.78vh;height:100vh;min-width:100%;min-height:56.25vw;transform:translate(-50%,-50%);" title="Level 3"></iframe>
       <div class="level-video-overlay"></div>
     </div>
     <div class="level-text-scroll">
       <div class="level-text-inner">
-        <span class="level-label experimental">Level 3 — Experimental</span>
-        <h2>The frontier — earned, not rushed.</h2>
-        <div class="level-description">
-          <p>Cutting-edge longevity protocols. Advanced interventions. The newest edge of what medicine knows. Unlocked only when your basics and optimization are stable.</p>
-        </div>
+        <span class="level-label experimental">Level 3 / Experimental</span>
+        <h2>Experimental protocols for the most demanding.</h2>
       </div>
     </div>
     <div class="level-measurements">
       <div class="measurements-inner">
+        <p class="measurements-description">Cutting-edge longevity protocols. Advanced interventions. The newest edge of what medicine knows. Unlocked only when your basics and optimization are stable.</p>
         <div class="measurements-header">Protocols</div>
         <div class="measurement-item">
           <div class="measurement-icon">🧬</div>
@@ -1363,290 +1594,185 @@
 
 
 <!-- ════════════════════════════════════════════ -->
-<!-- HOW IT WORKS — VISUAL 3-STEP (like Biograph) -->
+<!-- WHAT'S INSIDE — THE COMPLETE SYSTEM         -->
 <!-- ════════════════════════════════════════════ -->
-<section id="how-it-works" style="padding-bottom:4rem;">
+<section id="how-it-works">
   <div class="container-wide">
-    <div style="text-align:center; max-width:700px; margin:0 auto 3rem;">
-      <h3>How It Works</h3>
-      <h2 class="display">Four hours that change<br/>the next twelve months.</h2>
+    <div style="text-align:center; max-width:750px; margin:0 auto;">
+      <h3>What's Inside</h3>
+      <h2 class="display">Everything that guides you<br/>through each level.</h2>
+      <p class="large" style="margin-top:1.5rem;">Three levels. One system to carry you through them. Here's every tool, every specialist, every layer of care that works together from the moment you sign up.</p>
     </div>
 
-    <div class="visual-grid-3">
-      <div class="grid-item">
-        <div class="image-placeholder image-4-3">
-          <span class="label">Step 1 Image</span>
-          <span class="desc">A patient arriving at the Somatic clinic — walking through the entrance, being greeted. Architectural interior visible. Like Biograph's "complete your health assessment" image — warm, real photography, a human moment.</span>
-        </div>
-        <div class="step-card-number">1.</div>
-        <h4>Complete your diagnostic</h4>
-        <p>A single four-hour visit. Bloodwork, body composition, cardiovascular fitness, sensory health, and dozens of biomarkers — all in one seamless session. No bouncing between specialists.</p>
-      </div>
-      <div class="grid-item">
-        <div class="image-placeholder image-4-3">
-          <span class="label">Step 2 Image</span>
-          <span class="desc">Close-up of wearable trackers being configured — an Apple Watch on a wrist, a glucose monitor being placed, a sleep tracker on a nightstand. Warm, lifestyle photography. Devices as natural extensions of daily life, not medical instruments.</span>
-        </div>
-        <div class="step-card-number">2.</div>
-        <h4>Get your trackers</h4>
-        <p>Leave with wearables configured to feed data into your Somatic profile. Familiar devices like Apple Watch alongside advanced monitors for sleep quality, glucose, and heart rate variability.</p>
-      </div>
-      <div class="grid-item">
-        <div class="image-placeholder image-4-3">
-          <span class="label">Step 3 Image</span>
-          <span class="desc">Person looking at the Somatic app on their phone — calm, in a home setting. The screen shows a clean interface with a single score and a doctor's note. Shot over-the-shoulder or from the side. Relaxed, daily-life context. Like Biograph's "review your results" shot.</span>
-        </div>
-        <div class="step-card-number">3.</div>
-        <h4>Live your life</h4>
-        <p>Your app shows one score and one direction. Your physician monitors everything year-round and reaches out when something needs attention. Your next clinic visit is in twelve months.</p>
-      </div>
-    </div>
-  </div>
-</section>
 
-
-<!-- ════════════════════════════════════════════ -->
-<!-- FULL-BLEED APP VISUAL                       -->
-<!-- ════════════════════════════════════════════ -->
-<div class="container-full">
-  <div class="image-block">
-    <div class="image-placeholder image-cinema">
-      <span class="label">App Showcase Image</span>
-      <span class="desc">Wide, cinematic composition: the Somatic app interface floating on multiple devices — phone, tablet, desktop — against a warm gradient background. The interface shows the medical timeline, a simple progression score ("Level 1: 73%"), and a doctor's note. Lots of negative space. Product hero shot — like Function's dashboard preview. Clean, confident, calm.</span>
-    </div>
-  </div>
-</div>
-
-
-<!-- ════════════════════════════════════════════ -->
-<!-- APP — ONE SCORE                             -->
-<!-- ════════════════════════════════════════════ -->
-<section>
-  <div class="container-wide">
-    <div class="app-showcase">
-      <div>
-        <h3>The App</h3>
-        <h2>One score.<br/>Zero confusion.</h2>
-        <p class="large" style="margin-top:1.5rem;">Somatic reduces your entire health picture to a single progression score — are you moving to the next level, or aren't you?</p>
-        <p style="margin-top:1rem;">Behind that score: a complete medical timeline, your biomarker history, every intervention and its effect, your trajectory over time. Your doctor interprets it. You just follow the plan.</p>
-
-        <div class="pull-quote" style="margin-top:2.5rem;">
-          <p>Apple Health collects data.<br/>Somatic interprets it.</p>
-        </div>
-      </div>
+    <!-- ── LIFELINE VISUAL ── -->
+    <div style="margin:5rem 0 2rem;">
       <div class="image-block rounded-lg">
-        <div class="image-placeholder image-3-4">
-          <span class="label">App Mockup</span>
-          <span class="desc">Phone mockup, straight-on: the Somatic app home screen. Prominent score at top ("Level 1 — Basics: 73%"), a simplified medical timeline with trend sparklines, and a single doctor's note card at the bottom. Extreme white space. Minimal icons. The visual antithesis of a cluttered health dashboard.</span>
-        </div>
+        <img src="assets/somatic_lifeline.png" alt="Your Lifeline: from fragmented health records to a complete, connected health timeline" style="width:100%; display:block; border-radius:12px;" />
       </div>
+    </div>
+
+    <div style="text-align:center; max-width:600px; margin:0 auto 1rem;">
+      <h2 style="font-size:clamp(1.6rem, 3vw, 2.2rem);">Your Lifeline</h2>
+      <p style="margin-top:1rem;">From the moment you sign up, we build a complete record of your health. Every injury, every illness, every test result, every pattern. If you twist your ankle today, we know in ten years to watch that joint. Nothing is forgotten. Nothing is disconnected.</p>
+    </div>
+
+
+    <!-- ── SYSTEM COMPONENTS GRID ── -->
+    <div class="system-grid">
+
+      <!-- 1: Annual Diagnostic -->
+      <div class="system-card">
+        <div class="system-card-icon">🏥</div>
+        <h4>Once-a-year clinic visit</h4>
+        <p>A single four-hour diagnostic at our clinic. Bloodwork, body composition, cardiovascular fitness, sensory health, and dozens of biomarkers. All in one seamless session. Your next visit is in twelve months.</p>
+      </div>
+
+      <!-- 2: Specialist Team -->
+      <div class="system-card">
+        <div class="system-card-icon">👨‍⚕️</div>
+        <h4>Four specialist supervisors</h4>
+        <p>Not one doctor. A team. Cardiology, oncology, endocrinology, and longevity medicine. They review your data, refine your protocols, and catch what a single physician would miss. You're covered from every angle.</p>
+      </div>
+
+      <!-- 3: Medical-grade hardware -->
+      <div class="system-card">
+        <div class="system-card-icon">⌚</div>
+        <h4>Medical-grade hardware</h4>
+        <p>Consumer devices lie. We provide clinical-grade trackers for sleep, glucose, heart rate variability, and activity. Devices that actually measure what they claim to. Your data is precise because your decisions depend on it.</p>
+      </div>
+
+      <!-- 4: AI Monitoring -->
+      <div class="system-card">
+        <div class="system-card-icon">🤖</div>
+        <h4>AI checking all your data</h4>
+        <p>Your wearables stream data continuously. Our AI monitors it in real-time, detecting patterns, anomalies, and early warning signs that humans would miss. When something needs attention, your team is notified before you are.</p>
+      </div>
+
+      <!-- 5: Nutrition -->
+      <div class="system-card">
+        <div class="system-card-icon">🥗</div>
+        <h4>Nutrition plan + nutritionist</h4>
+        <p>A personalized nutrition plan based on your glucose responses, metabolic profile, and how your body actually reacts. Not generic guidelines. A dedicated nutritionist adjusts it as your data evolves.</p>
+      </div>
+
+      <!-- 6: Workout + Coach -->
+      <div class="system-card">
+        <div class="system-card-icon">🏋️</div>
+        <h4>Workout plan + personal coach</h4>
+        <p>A training program designed for your body, your level, and your goals. A personal coach watches your progress, adjusts your routine, and keeps you accountable so you never plateau and never get injured.</p>
+      </div>
+
+      <!-- 7: Constant monitoring (wide) -->
+      <div class="system-card card-wide" style="text-align:center;">
+        <div class="system-card-icon" style="margin:0 auto 1.5rem;">📞</div>
+        <h4 style="text-align:center;">Constant expert monitoring. They call you.</h4>
+        <p style="max-width:600px; margin:0 auto;">You don't check dashboards. You don't interpret charts. Your specialists watch everything, and when something needs your attention, they call you. You are taken care of. Not left alone with your data.</p>
+      </div>
+
     </div>
   </div>
 </section>
 
 
 <!-- ════════════════════════════════════════════ -->
-<!-- YOUR YEAR — ANNUAL FLOW                     -->
+<!-- THE PROVEN SYSTEM — FLYWHEEL + DOCTORS      -->
 <!-- ════════════════════════════════════════════ -->
-<section class="accent-section" style="padding-bottom:6rem;">
+<section class="accent-section">
   <div class="container-wide">
-    <div style="text-align:center; max-width:700px; margin:0 auto;">
-      <h3>Your Year</h3>
-      <h2>What happens between visits<br/>matters more than the visit.</h2>
-      <p style="margin-top:1rem; color:rgba(255,255,255,0.6); font-size:1.1rem;">One clinic visit starts a twelve-month cycle of continuous care. Here's how your year unfolds.</p>
+
+    <!-- Header -->
+    <div style="text-align:center; max-width:750px; margin:0 auto;">
+      <h3>The Proven System</h3>
+      <h2>A system you can trust. Not a single doctor you hope is right.</h2>
+      <p style="margin-top:1.25rem; color:rgba(255,255,255,0.6); font-size:1.1rem;">Every year, the same cycle repeats. Every year, you get healthier. A protocol-driven flywheel backed by world-class specialists. Not one doctor's intuition.</p>
     </div>
 
-    <div class="year-timeline">
-      <div class="year-timeline-line">
-        <div class="year-timeline-line-fill"></div>
-      </div>
-
-      <div class="year-timeline-grid">
-        <!-- Node 1: Day 1 -->
-        <div class="year-node">
-          <div class="year-node-image">
-            <div class="image-placeholder" style="background:linear-gradient(135deg, #245232 0%, #1e4a2d 100%);">
-              <span class="label">Day 1 Image</span>
-              <span class="desc">Patient arriving at the Somatic clinic — walking through the glass entrance, warm interior light spilling out. A handshake or greeting moment. Premium, welcoming, the start of something.</span>
-            </div>
-          </div>
-          <div class="year-node-dot"></div>
-          <div class="year-node-text">
-            <div class="year-time">Day 1</div>
-            <h4>Full diagnostic</h4>
-            <p>Four hours of comprehensive testing. Bloodwork, body composition, cardiovascular fitness. You leave with trackers and app access.</p>
-          </div>
+    <!-- Flywheel -->
+    <div class="flywheel-container">
+      <div class="flywheel">
+        <div class="flywheel-ring"></div>
+        <div class="flywheel-center">
+          <span>Every year</span>
+          <h4>You get<br/>healthier</h4>
         </div>
 
-        <!-- Node 2: Week 1 -->
-        <div class="year-node">
-          <div class="year-node-image">
-            <div class="image-placeholder" style="background:linear-gradient(135deg, #245232 0%, #1e4a2d 100%);">
-              <span class="label">Week 1 Image</span>
-              <span class="desc">A phone screen showing the Somatic app activating — the first score appearing, the health plan populating. Soft glow from the screen, ambient home setting. The moment the system comes to life.</span>
-            </div>
-          </div>
-          <div class="year-node-dot"></div>
-          <div class="year-node-text">
-            <div class="year-time">Week 1</div>
-            <h4>Plan goes live</h4>
-            <p>Your physician reviews all results, assigns your level, and activates your personalized health plan in the app.</p>
-          </div>
+        <!-- Top: Diagnostic -->
+        <div class="flywheel-node top">
+          <div class="flywheel-node-icon">🏥</div>
+          <h5>Diagnostic</h5>
+          <p>Full 4-hour clinic assessment</p>
         </div>
 
-        <!-- Node 3: Months 1–12 -->
-        <div class="year-node">
-          <div class="year-node-image">
-            <div class="image-placeholder" style="background:linear-gradient(135deg, #245232 0%, #1e4a2d 100%);">
-              <span class="label">Months 1–12 Image</span>
-              <span class="desc">Lifestyle montage feel: a person living normally — running, cooking, sleeping — with subtle wearable visible on the wrist. Data flowing quietly in the background. Daily life, monitored. Not intrusive, not medical. Just life with a safety net.</span>
-            </div>
-          </div>
-          <div class="year-node-dot"></div>
-          <div class="year-node-text">
-            <div class="year-time">Months 1–12</div>
-            <h4>Continuous care</h4>
-            <p>Wearables feed data to Somatic. Your doctor watches for signals, trends, anomalies. You see one score, one direction.</p>
-          </div>
+        <!-- Right: Plan -->
+        <div class="flywheel-node right">
+          <div class="flywheel-node-icon">📋</div>
+          <h5>Plan</h5>
+          <p>Personalized protocols + health plan</p>
         </div>
 
-        <!-- Node 4: Month 12 -->
-        <div class="year-node">
-          <div class="year-node-image">
-            <div class="image-placeholder" style="background:linear-gradient(135deg, #245232 0%, #1e4a2d 100%);">
-              <span class="label">Month 12 Image</span>
-              <span class="desc">Patient returning to the clinic — same entrance as Day 1 but now the feeling is different: confident, familiar. A before/after comparison chart visible on a screen in the background. Full circle, progress made visible.</span>
-            </div>
-          </div>
-          <div class="year-node-dot"></div>
-          <div class="year-node-text">
-            <div class="year-time">Month 12</div>
-            <h4>Annual re-test</h4>
-            <p>Return to the clinic. Measure everything again. Compare against your baseline. Update your level. Set next year's course.</p>
-          </div>
+        <!-- Bottom: Execution -->
+        <div class="flywheel-node bottom">
+          <div class="flywheel-node-icon">⚡</div>
+          <h5>Execution</h5>
+          <p>Treatments, nutrition, training</p>
+        </div>
+
+        <!-- Left: Monitoring -->
+        <div class="flywheel-node left">
+          <div class="flywheel-node-icon">📡</div>
+          <h5>Monitoring</h5>
+          <p>365-day continuous tracking</p>
         </div>
       </div>
     </div>
+
+    <!-- Divider -->
+    <div style="width:60px; height:1px; background:rgba(255,255,255,0.15); margin:3rem auto;"></div>
+
+    <!-- Doctors -->
+    <div style="text-align:center; max-width:600px; margin:0 auto 0.5rem;">
+      <h3 style="color:rgba(255,255,255,0.4);">Backed By</h3>
+      <h2 style="color:var(--white); font-size:clamp(1.6rem, 3vw, 2.2rem); margin-top:0.75rem;">World-class specialists behind every decision.</h2>
+    </div>
+
+    <div class="doctor-grid">
+      <!-- Doctor 1: Cardiology -->
+      <div class="doctor-card">
+        <div class="doctor-avatar">🫀</div>
+        <h5>Doctor Name</h5>
+        <div class="doctor-role">Cardiology</div>
+        <p class="doctor-quote">"Placeholder for testimonial about cardiovascular care and the Somatic system."</p>
+      </div>
+
+      <!-- Doctor 2: Oncology -->
+      <div class="doctor-card">
+        <div class="doctor-avatar">🔬</div>
+        <h5>Doctor Name</h5>
+        <div class="doctor-role">Oncology</div>
+        <p class="doctor-quote">"Placeholder for testimonial about early cancer detection and prevention protocols."</p>
+      </div>
+
+      <!-- Doctor 3: Endocrinology -->
+      <div class="doctor-card">
+        <div class="doctor-avatar">🧬</div>
+        <h5>Doctor Name</h5>
+        <div class="doctor-role">Endocrinology</div>
+        <p class="doctor-quote">"Placeholder for testimonial about metabolic health and hormone optimization."</p>
+      </div>
+
+      <!-- Doctor 4: Longevity -->
+      <div class="doctor-card">
+        <div class="doctor-avatar">⭐</div>
+        <h5>Doctor Name</h5>
+        <div class="doctor-role">Longevity Medicine</div>
+        <p class="doctor-quote">"Placeholder for testimonial about the evidence-based longevity approach."</p>
+      </div>
+    </div>
+
   </div>
 </section>
 
-
-<!-- ════════════════════════════════════════════ -->
-<!-- THE MEDICAL MODEL                           -->
-<!-- ════════════════════════════════════════════ -->
-<section class="cream-section">
-  <div class="container-wide">
-    <div class="two-col gap-lg">
-      <div>
-        <h3>The Medical Model</h3>
-        <h2>A system you can trust — not a single doctor you hope is right.</h2>
-        <p class="large" style="margin-top:1.5rem;">Your health decisions aren't made by one physician's intuition. They're made by a protocol-driven system backed by a council of world-class specialists in cardiology, oncology, endocrinology, and longevity medicine.</p>
-        <p style="margin-top:1rem;">Your personal doctor is your point of contact. Behind them is the entire system — evidence-based, specialist-reviewed, continuously updated as the science evolves.</p>
-      </div>
-      <div class="image-block rounded-lg">
-        <div class="image-placeholder image-square">
-          <span class="label">Medical Model Image</span>
-          <span class="desc">A physician at a workstation reviewing the Somatic system — multiple patient profiles, protocol dashboards, and specialist consultation feeds visible on screens. Shot from behind/side, warm ambient lighting. Conveys depth and infrastructure — this isn't one doctor with a stethoscope, it's an entire operating system for health.</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="feature-grid" style="margin-top:4rem;">
-      <div class="feature-card">
-        <div class="feature-icon">&#x1F3AF;</div>
-        <h4>Protocol-Driven</h4>
-        <p>Every recommendation follows evidence-based protocols developed by our medical council. No guesswork. No personal bias.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">&#x1F9EC;</div>
-        <h4>Specialist-Backed</h4>
-        <p>World-class experts in cancer, heart health, and metabolic disease review and refine the system continuously.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">&#x1F504;</div>
-        <h4>Continuously Updated</h4>
-        <p>As new evidence emerges, the system evolves. Your protocols update in real-time. Never stuck on yesterday's science.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ════════════════════════════════════════════ -->
-<!-- THE CLINIC — LEGITIMIZATION LAYER           -->
-<!-- Like Apple Store: premium, trust, brand     -->
-<!-- ════════════════════════════════════════════ -->
-<section class="dark-section" id="clinic">
-  <div class="container-wide">
-    <div style="text-align:center; max-width:750px; margin:0 auto 3rem;">
-      <h3>The Clinic</h3>
-      <h2 class="display" style="color:var(--white);">A private retreat built<br/>around your health.</h2>
-      <p class="large" style="margin-top:1rem; color:#999;">You visit once a year. But the clinic is where trust is built — the physical proof that this system is real, rigorous, and world-class.</p>
-    </div>
-
-    <!-- Clinic photo gallery — like Biograph's clinic section -->
-    <div class="clinic-gallery">
-      <div class="image-block">
-        <div class="image-placeholder" style="border-radius:16px; aspect-ratio:3/2;">
-          <span class="label">Clinic Hero Image</span>
-          <span class="desc">The Somatic clinic entrance and main reception — floor-to-ceiling glass, warm wood paneling, stone flooring, a green living wall visible in the background. A staff member greeting a patient. Think Biograph's "private retreat" section — architectural, luxurious, calm. Not sterile. Not spa-like. Premium medical.</span>
-        </div>
-      </div>
-      <div class="clinic-gallery-secondary">
-        <div class="image-block">
-          <div class="image-placeholder" style="border-radius:16px;">
-            <span class="label">Clinic Detail 1</span>
-            <span class="desc">Close-up of the diagnostic suite — premium medical equipment in a beautifully designed room. Wood, glass, natural light. An examination bed that looks more like a designer lounge chair. Like Neko's clinic photography — clinical precision meets interior design.</span>
-          </div>
-        </div>
-        <div class="image-block">
-          <div class="image-placeholder" style="border-radius:16px;">
-            <span class="label">Clinic Detail 2</span>
-            <span class="desc">The physician consultation room — a patient and doctor mid-conversation across a warm wooden desk. Data visible on a large screen behind them. Intimate, unhurried, professional. The finale of the 4-hour experience.</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Clinic facts strip -->
-    <div class="clinic-details">
-      <div class="clinic-detail-item">
-        <h4>Location</h4>
-        <p style="color:var(--white);">Warsaw, Poland</p>
-      </div>
-      <div class="clinic-detail-item">
-        <h4>Experience</h4>
-        <p style="color:var(--white);">4 hours, seamless flow</p>
-      </div>
-      <div class="clinic-detail-item">
-        <h4>Frequency</h4>
-        <p style="color:var(--white);">Once per year</p>
-      </div>
-      <div class="clinic-detail-item">
-        <h4>International</h4>
-        <p style="color:var(--white);">Hotel + transport included</p>
-      </div>
-    </div>
-
-    <div style="text-align:center; margin-top:2rem;">
-      <a href="#pricing" class="cta-button" style="background:var(--white); color:var(--black);">
-        Book a Diagnostic
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-      </a>
-    </div>
-  </div>
-</section>
-
-
-<!-- Full-bleed Warsaw image -->
-<div class="container-full dark-context">
-  <div class="image-block">
-    <div class="image-placeholder image-cinema" style="border-radius:0; border:none;">
-      <span class="label">Warsaw Image</span>
-      <span class="desc">Cinematic aerial shot of Warsaw — the modern skyline and Vistula river at golden hour. Warm, aspirational. A city worth traveling to. Like Neko's Stockholm/London location photography — establishing shot that says "this is a destination."</span>
-    </div>
-  </div>
-</div>
 
 
 <!-- ════════════════════════════════════════════ -->
@@ -1699,7 +1825,7 @@
           <li>Hotel + transport for clinic visits</li>
         </ul>
         <div class="price-divider"></div>
-        <p class="summary">We monitor, diagnose, recommend — and execute. Every treatment, handled.</p>
+        <p class="summary">We monitor, diagnose, recommend, and execute. Every treatment, handled.</p>
         <a href="#cta" class="pricing-cta">Get Started</a>
       </div>
     </div>
@@ -1750,25 +1876,9 @@
   </div>
 </footer>
 
+<script src="https://player.vimeo.com/api/player.js"></script>
 <script>
 (function() {
-  // ─── NAV: transparent → solid on scroll ───
-  const nav = document.querySelector('nav');
-  const heroEl = document.querySelector('.hero');
-
-  function updateNav() {
-    if (!heroEl || !nav) return;
-    const heroBottom = heroEl.getBoundingClientRect().bottom;
-    if (heroBottom < 60) {
-      nav.classList.add('nav-scrolled');
-    } else {
-      nav.classList.remove('nav-scrolled');
-    }
-  }
-
-  window.addEventListener('scroll', updateNav, { passive: true });
-  updateNav();
-
   // ─── LEVEL PANELS ───
   const panels = document.querySelectorAll('.level-panel');
   const vh = () => window.innerHeight;
@@ -1788,34 +1898,19 @@
       const progress = scrolled / (panelH - vh());   // 0→1 over scroll range
 
       // ── OVERLAY ──
-      // Early: light overlay (see the video). Middle: darker (text is showing). Late: lifts again.
-      let overlayOpacity;
-      if (progress < 0.1) {
-        overlayOpacity = 0.2;
-      } else if (progress < 0.5) {
-        // Darken as text appears
-        overlayOpacity = 0.2 + ((progress - 0.1) / 0.4) * 0.35;
-      } else if (progress < 0.85) {
-        // Hold dark while text is visible
-        overlayOpacity = 0.55;
-      } else {
-        // Lift as we scroll out — reveal the video
-        overlayOpacity = 0.55 - ((progress - 0.85) / 0.15) * 0.4;
-      }
-      overlay.style.opacity = Math.max(0.1, Math.min(0.6, overlayOpacity));
+      // Smooth continuous ramp: 0.25 at start → 1.0 at end, no jumps
+      const clamped = Math.max(0, Math.min(1, progress));
+      const overlayOpacity = 0.25 + clamped * 0.75;
+      overlay.style.opacity = overlayOpacity;
 
-      // ── TEXT + MEASUREMENTS REVEAL ──
-      const panelTop = rect.top;
-
-      textInner.classList.remove('show-description');
-      if (measurements) measurements.classList.remove('show-measurements');
-
-      // Description appears when video sticks (panel top hits viewport top)
-      if (panelTop <= 0) textInner.classList.add('show-description');
-
-      // Measurements appear later — when user has scrolled further into the panel
-      if (measurements && panelTop <= -vh() * 0.4) {
-        measurements.classList.add('show-measurements');
+      // ── MEASUREMENTS REVEAL (paragraph + items as one block) ──
+      // Use the measurements element position directly — show when it's in the viewport
+      if (measurements) {
+        const mRect = measurements.getBoundingClientRect();
+        measurements.classList.remove('show-measurements');
+        if (mRect.top < vh() * 0.85) {
+          measurements.classList.add('show-measurements');
+        }
       }
     });
 
