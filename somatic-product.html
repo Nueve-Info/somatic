@@ -494,10 +494,12 @@
 
     /* The sticky video/image background — locks to viewport */
     .level-video-wrap {
+      position: -webkit-sticky;
       position: sticky;
       top: 0;
       width: 100%;
       height: 100vh;
+      height: 100dvh;
       overflow: hidden;
       z-index: 1;
       background: #0a0a0a;
@@ -536,7 +538,9 @@
       position: relative;
       z-index: 3;
       margin-top: -100vh;
+      margin-top: -100dvh;
       min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -1879,45 +1883,61 @@
 <script src="https://player.vimeo.com/api/player.js"></script>
 <script>
 (function() {
-  // ─── LEVEL PANELS ───
+  // ─── LEVEL PANELS — OVERLAY OPACITY ───
   const panels = document.querySelectorAll('.level-panel');
   const vh = () => window.innerHeight;
 
-  function update() {
+  function updateOverlays() {
     panels.forEach(panel => {
       const rect = panel.getBoundingClientRect();
       const overlay = panel.querySelector('.level-video-overlay');
-      const textInner = panel.querySelector('.level-text-inner');
-      const measurements = panel.querySelector('.level-measurements');
-      if (!overlay || !textInner) return;
+      if (!overlay) return;
 
-      // progress: 0 = panel top at viewport bottom, 1 = panel top at viewport top
-      // Beyond 1 = we're scrolling deeper into the panel
       const panelH = panel.offsetHeight;
-      const scrolled = -rect.top;                    // how far into the panel
-      const progress = scrolled / (panelH - vh());   // 0→1 over scroll range
+      const scrolled = -rect.top;
+      const progress = scrolled / (panelH - vh());
 
-      // ── OVERLAY ──
-      // Smooth continuous ramp: 0.25 at start → 1.0 at end, no jumps
       const clamped = Math.max(0, Math.min(1, progress));
-      const overlayOpacity = 0.25 + clamped * 0.75;
-      overlay.style.opacity = overlayOpacity;
+      overlay.style.opacity = 0.25 + clamped * 0.75;
+    });
+    requestAnimationFrame(updateOverlays);
+  }
+  requestAnimationFrame(updateOverlays);
 
-      // ── MEASUREMENTS REVEAL (paragraph + items as one block) ──
-      // Use the measurements element position directly — show when it's in the viewport
-      if (measurements) {
-        const mRect = measurements.getBoundingClientRect();
-        measurements.classList.remove('show-measurements');
-        if (mRect.top < vh() * 0.85) {
-          measurements.classList.add('show-measurements');
-        }
+  // Also update on scroll for mobile Safari (rAF pauses during momentum scroll)
+  let ticking = false;
+  window.addEventListener('scroll', function() {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(function() {
+        panels.forEach(panel => {
+          const rect = panel.getBoundingClientRect();
+          const overlay = panel.querySelector('.level-video-overlay');
+          if (!overlay) return;
+          const panelH = panel.offsetHeight;
+          const scrolled = -rect.top;
+          const progress = scrolled / (panelH - vh());
+          const clamped = Math.max(0, Math.min(1, progress));
+          overlay.style.opacity = 0.25 + clamped * 0.75;
+        });
+        ticking = false;
+      });
+    }
+  }, { passive: true });
+
+  // ─── MEASUREMENTS REVEAL — IntersectionObserver (works during mobile scroll) ───
+  const measurementSections = document.querySelectorAll('.level-measurements');
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('show-measurements');
+      } else {
+        entry.target.classList.remove('show-measurements');
       }
     });
+  }, { threshold: 0.05, rootMargin: '0px 0px -15% 0px' });
 
-    requestAnimationFrame(update);
-  }
-
-  requestAnimationFrame(update);
+  measurementSections.forEach(function(el) { observer.observe(el); });
 })();
 </script>
 
